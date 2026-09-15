@@ -1,0 +1,1310 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>HR Lifecycle Management — פרוטוטייפ</title>
+<style>
+  :root{
+    --ink:#1F1B18; --soft:#3A3430; --muted:#7E756C; --faint:#9A9188;
+    --line:#EFEAE6; --line2:#E5E0DC; --page:#F4F2F0; --card:#fff;
+    --orange:#E1502A; --orange-ink:#A8563C; --orange-bg:#FDF0E9; --orange-soft:#FDF7F4;
+    --green:#2E7D5B; --green-bg:#E8F3EE; --amber:#B07A12; --amber-bg:#FBF1DE;
+    --red:#C0392B; --red-bg:#FBEBE9; --blue:#2F5C97; --blue-bg:#EAF0F8;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--page);color:var(--ink);font-family:"Assistant","Segoe UI",Arial,sans-serif;font-size:14px;line-height:1.55}
+  button{font:inherit;cursor:pointer}
+  .app{display:flex;min-height:100vh}
+  aside{width:196px;flex:0 0 196px;background:#fff;border-left:.5px solid var(--line2);padding:14px 10px}
+  .brand{display:flex;align-items:center;gap:8px;padding:4px 8px 14px}
+  .brand i{width:22px;height:22px;border-radius:50%;background:var(--orange);display:block}
+  .brand b{font-size:14px;font-weight:600}
+  .brand small{display:block;font-size:10px;color:var(--faint);font-weight:400}
+  nav button{display:flex;justify-content:space-between;align-items:center;width:100%;border:0;background:transparent;
+             color:var(--soft);text-align:right;padding:9px 10px;border-radius:8px;margin-bottom:2px;font-size:13px}
+  nav button:hover{background:var(--page)}
+  nav button[aria-current="true"]{background:var(--orange-bg);color:var(--orange-ink);font-weight:600}
+  nav .n{font-size:11px;color:var(--faint)}
+  nav button[aria-current="true"] .n{color:var(--orange-ink)}
+  main{flex:1;padding:18px 20px 40px;min-width:0}
+  .top{display:flex;justify-content:space-between;align-items:flex-end;margin-bottom:14px;gap:12px;flex-wrap:wrap}
+  h1{font-size:21px;font-weight:600;margin:0}
+  .top p{margin:2px 0 0;font-size:12px;color:var(--muted)}
+  .card{background:var(--card);border:.5px solid var(--line2);border-radius:10px}
+  .pad{padding:14px}
+  h2{font-size:13px;font-weight:600;margin:0 0 10px;color:var(--soft)}
+  .grid{display:grid;gap:10px}
+  .kpis{grid-template-columns:repeat(auto-fit,minmax(138px,1fr))}
+  .kpi{background:#fff;border:.5px solid var(--line2);border-radius:10px;padding:11px 12px;text-align:right}
+  .kpi b{display:block;font-size:22px;font-weight:600;line-height:1.2}
+  .kpi span{font-size:11px;color:var(--muted)}
+  .kpi.warn b{color:var(--amber)} .kpi.bad b{color:var(--red)}
+  .cols{display:grid;grid-template-columns:1.35fr 1fr;gap:12px;align-items:start}
+  @media(max-width:900px){.cols{grid-template-columns:1fr}aside{display:none}}
+  table{width:100%;border-collapse:collapse}
+  th{font-size:11px;color:var(--faint);font-weight:500;text-align:right;padding:0 8px 7px}
+  td{padding:9px 8px;border-top:.5px solid var(--line);font-size:13px;vertical-align:middle}
+  tr.click:hover td{background:var(--orange-soft);cursor:pointer}
+  .chip{display:inline-block;font-size:11px;padding:2px 8px;border-radius:999px}
+  .c-ok{background:var(--green-bg);color:var(--green)} .c-run{background:var(--blue-bg);color:var(--blue)}
+  .c-stuck{background:var(--red-bg);color:var(--red)} .c-wait{background:var(--amber-bg);color:var(--amber)}
+  .bar{height:6px;background:var(--line);border-radius:6px;overflow:hidden;min-width:70px}
+  .bar i{display:block;height:6px;background:var(--orange);border-radius:6px}
+  .funnel div{display:flex;align-items:center;gap:8px;margin-bottom:7px;font-size:12px}
+  .funnel span:first-child{width:104px;color:var(--muted)}
+  .funnel .fb{height:22px;background:var(--orange-bg);border-radius:5px;display:flex;align-items:center;
+              justify-content:flex-start;padding:0 7px;color:var(--orange-ink);font-size:11px}
+  .alert{display:flex;gap:9px;padding:9px 0;border-top:.5px solid var(--line);font-size:12.5px}
+  .alert:first-of-type{border-top:0}
+  .dot{width:7px;height:7px;border-radius:50%;margin-top:6px;flex:0 0 7px}
+  .alert small{display:block;color:var(--faint);font-size:11px}
+  .qa{display:flex;flex-wrap:wrap;gap:7px}
+  .qa button{border:.5px solid var(--line2);background:#fff;border-radius:8px;padding:7px 11px;font-size:12.5px;color:var(--soft)}
+  .qa button:hover{border-color:var(--orange);color:var(--orange-ink)}
+  .tools{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:12px}
+  .tools input,.tools select{border:.5px solid var(--line2);border-radius:8px;padding:7px 10px;font:inherit;font-size:13px;background:#fff}
+  .tools input{min-width:190px}
+  .filters{display:flex;gap:5px}
+  .filters button{border:.5px solid var(--line2);background:#fff;border-radius:999px;padding:5px 12px;font-size:12px;color:var(--muted)}
+  .filters button[aria-pressed="true"]{background:var(--orange-bg);border-color:var(--orange-bg);color:var(--orange-ink)}
+  .primary{margin-inline-start:auto;border:0;background:var(--orange);color:#fff;border-radius:8px;padding:8px 14px;font-size:13px}
+  .steps li{list-style:none;display:flex;align-items:flex-start;gap:9px;padding:9px 0;border-top:.5px solid var(--line)}
+  .steps{margin:0;padding:0}
+  .steps li:first-child{border-top:0}
+  .steps input{margin-top:3px;width:15px;height:15px;accent-color:var(--orange)}
+  .steps b{display:block;font-size:13px;font-weight:500}
+  .steps small{color:var(--faint);font-size:11px}
+  .done b{color:var(--faint);text-decoration:line-through}
+  .tabs{display:flex;gap:4px;border-bottom:.5px solid var(--line2);margin-bottom:12px;flex-wrap:wrap}
+  .tabs button{border:0;background:transparent;padding:8px 11px;font-size:13px;color:var(--muted);border-bottom:2px solid transparent}
+  .tabs button[aria-selected="true"]{color:var(--orange-ink);border-bottom-color:var(--orange);font-weight:600}
+  .tl{position:relative;padding-inline-start:16px}
+  .tl::before{content:"";position:absolute;inset-block:4px;inset-inline-start:4px;width:1.5px;background:var(--line)}
+  .tl div{position:relative;padding:0 0 13px}
+  .tl div::before{content:"";position:absolute;inset-inline-start:-16px;top:6px;width:9px;height:9px;border-radius:50%;background:var(--orange)}
+  .tl b{font-size:13px;font-weight:500;display:block}
+  .tl small{color:var(--faint);font-size:11px}
+  .snap{display:grid;grid-template-columns:repeat(auto-fit,minmax(110px,1fr));gap:10px}
+  .snap div{font-size:13px}.snap span{display:block;font-size:11px;color:var(--faint)}
+  .rule{border:.5px solid var(--line2);border-radius:10px;padding:12px;background:#fff;margin-bottom:9px}
+  .rule code{background:var(--page);border-radius:5px;padding:2px 6px;font-size:12px;font-family:ui-monospace,monospace}
+  .sw{position:relative;width:34px;height:19px;border-radius:999px;background:var(--line2);border:0;flex:0 0 34px}
+  .sw[aria-pressed="true"]{background:var(--orange)}
+  .sw::after{content:"";position:absolute;top:2px;inset-inline-end:2px;width:15px;height:15px;border-radius:50%;background:#fff;transition:.15s}
+  .sw[aria-pressed="true"]::after{inset-inline-end:17px}
+  .phone{max-width:330px;margin:0 auto;border:.5px solid var(--line2);border-radius:14px;overflow:hidden;background:#fff}
+  .task{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:11px 13px;border-top:.5px solid var(--line)}
+  .task b{font-size:13px;font-weight:500;display:block}
+  .task small{font-size:11px;color:var(--faint)}
+  .task span.go{font-size:12px;color:var(--orange)}
+  .toast{position:fixed;inset-block-end:18px;inset-inline-start:18px;background:var(--ink);color:#fff;
+         padding:9px 14px;border-radius:8px;font-size:13px;opacity:0;pointer-events:none;transition:.2s}
+  .toast.on{opacity:1}
+  .tree ul{list-style:none;margin:0;padding-inline-start:18px;border-inline-start:.5px solid var(--line)}
+  .tree>ul{border:0;padding-inline-start:0}
+  .tree li{padding:3px 0}
+  .node{display:inline-flex;align-items:center;gap:8px;border:.5px solid var(--line2);border-radius:8px;
+        padding:6px 10px;background:#fff;cursor:pointer;font-size:13px}
+  .node:hover{border-color:var(--orange)}
+  .node small{color:var(--faint);font-size:11px}
+  .node b{font-weight:500}
+  .crit{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:8px 0;border-top:.5px solid var(--line)}
+  .crit select{border:.5px solid var(--line2);border-radius:7px;padding:5px 8px;font:inherit;font-size:12.5px;background:#fff}
+  .q{border:.5px solid var(--line2);border-radius:9px;padding:10px 12px;margin-bottom:8px;background:#fff}
+  .prof{display:flex;gap:3px;background:var(--page);padding:3px;border-radius:8px}
+  .prof button{flex:1;border:0;background:transparent;font:inherit;font-size:11.5px;color:var(--muted);padding:6px 4px;border-radius:6px}
+  .prof button[aria-pressed="true"]{background:#fff;color:var(--orange-ink);font-weight:600;box-shadow:0 1px 2px rgba(0,0,0,.05)}
+  .proflbl{font-size:10px;color:var(--faint);margin:0 2px 4px}
+  [hidden]{display:none!important}
+  :focus-visible{outline:2px solid var(--orange);outline-offset:2px}
+</style>
+</head>
+<body>
+<div class="app">
+  <aside>
+    <div class="brand"><i></i><b>HR Lifecycle<small>סינאל · הרמוני</small></b></div>
+    <div id="profsw" style="margin:0 6px 12px"></div>
+    <nav id="nav"></nav>
+  </aside>
+
+  <main>
+    <div class="top">
+      <div><h1 id="v-title">לוח בקרה</h1><p id="v-sub"></p></div>
+      <div id="v-action"></div>
+    </div>
+    <div id="view"></div>
+  </main>
+</div>
+<div class="toast" id="toast"></div>
+
+<script>
+/* ---------------- נתוני דמו ---------------- */
+const ONB_STEPS = ['פתיחת עובד','שליחת הודעת פתיחה','מילוי טפסים','חתימה על מסמכים','הדרכות','שיוך ציוד','פתיחת הרשאות','הודעת סיכום'];
+const OFF_STEPS = ['פתיחת תהליך עזיבה','שליחת טפסי סיום','טופס 161','גמר חשבון','שאלון סיום','החזרת ציוד','סגירת הרשאות','אישור סופי'];
+
+const DB = {
+  onboarding: [
+    {id:'o1', name:'דנה לוי',    role:'מנהלת תפעול', dept:'תפעול',  start:'10.06.2026', owner:'שרון',  done:5, stuck:false},
+    {id:'o2', name:'יוסי ברק',   role:'טכנאי שטח',   dept:'שירות',  start:'15.06.2026', owner:'שרון',  done:2, stuck:true},
+    {id:'o3', name:'מאיה כהן',   role:'מפתחת',       dept:'פיתוח',  start:'01.07.2026', owner:'איזק',  done:7, stuck:false},
+    {id:'o4', name:'אבי נחום',   role:'נהג',         dept:'לוגיסטיקה', start:'20.06.2026', owner:'שרון', done:8, stuck:false}
+  ],
+  offboarding: [
+    {id:'f1', name:'רונית שמש', role:'רכזת שכר', dept:'כספים', start:'30.06.2026', owner:'איזק', done:3, stuck:false, reason:'התפטרות', mode:'הודעה מוקדמת 30 יום'},
+    {id:'f2', name:'עומר דגן',  role:'איש מכירות', dept:'מכירות', start:'12.06.2026', owner:'שרון', done:6, stuck:true, reason:'פיטורים', mode:'שימוע הושלם'}
+  ],
+  employee: {
+    name:'דנה לוי', role:'מנהלת תפעול', dept:'תפעול', manager:'שרון אלון', seniority:'3 חודשים', status:'בקליטה',
+    timeline:[
+      {t:'10.06.2026 09:14', b:'נפתח תהליך קליטה', s:'שרון אלון · Employee ID 4417'},
+      {t:'10.06.2026 09:16', b:'נשלחה הודעת פתיחה', s:'SMS · הקישור נפתח תוך 4 דקות'},
+      {t:'10.06.2026 09:31', b:'טופס 101 הוגש', s:'אסמכתה 2026-0148'},
+      {t:'10.06.2026 09:38', b:'חוזה העסקה נחתם דיגיטלית', s:'חתימה + חותמת זמן · IP נשמר'},
+      {t:'12.06.2026 11:02', b:'הדרכת בטיחות הושלמה', s:'ציון 92 · תוקף עד 12.06.2027'},
+      {t:'13.06.2026 08:45', b:'נמסר ציוד', s:'מחשב נייד, טלפון'}
+    ],
+    docs:[
+      {n:'חוזה העסקה', cat:'קליטה', st:'נחתם', c:'c-ok', v:'v2.1', d:'10.06.2026', by:'שרון אלון', sz:'412 KB', src:'מחולל הטפסים', body:'הסכם העסקה אישי — תפקיד מנהל/ת תפעול, שכר חודשי 14,500 ₪ ברוטו, 186 שעות בחודש, 14 ימי חופשה בשנה, הפרשות לפנסיה ולקרן השתלמות מהיום הראשון.'},
+      {n:'טופס 101 לשנת 2026', cat:'קליטה', st:'הוגש', c:'c-ok', v:'2026', d:'10.06.2026', by:'דנה לוי', sz:'188 KB', src:'פורטל עובד', body:'כרטיס עובד לצורכי מס — מצב משפחתי נשואה, שני ילדים עד גיל 18, מקום עבודה יחיד, בקשה לתיאום מס לא נדרשה.'},
+      {n:'תעודת זהות וספח', cat:'מסמכים אישיים', st:'נסרק', c:'c-ok', v:'—', d:'10.06.2026', by:'שרון אלון', sz:'1.2 MB', src:'סריקה', body:'צילום תעודת זהות וספח פרטים אישיים, נקלט בגרירה לתיק העובד.'},
+      {n:'תעודת תואר ראשון', cat:'השכלה', st:'נסרק', c:'c-ok', v:'—', d:'11.06.2026', by:'דנה לוי', sz:'740 KB', src:'פורטל עובד', body:'תואר ראשון בהנדסת תעשייה וניהול, אוניברסיטת בן גוריון, שנת סיום 2019.'},
+      {n:'NDA — הסכם סודיות', cat:'קליטה', st:'ממתין לחתימה', c:'c-wait', v:'v1.4', d:'נשלח 11.06.2026', by:'המערכת', sz:'96 KB', src:'מחולל הטפסים', body:'התחייבות לשמירת סודיות ביחס לכל מידע עסקי שיגיע לידי העובד/ת, בתקופת ההעסקה ולאחריה.'},
+      {n:'נוהל אבטחת מידע', cat:'נהלים', st:'ממתין לאישור קריאה', c:'c-wait', v:'v3.0', d:'נשלח 11.06.2026', by:'המערכת', sz:'320 KB', src:'מחולל הטפסים', body:'נוהל אבטחת מידע ארגוני — סיסמאות, גישה מרחוק, דיווח על אירוע אבטחת מידע והתנהלות מול ספקים.'},
+      {n:'טופס היעדר ניגוד עניינים', cat:'קליטה', st:'נחתם', c:'c-ok', v:'v2.0', d:'10.06.2026', by:'דנה לוי', sz:'104 KB', src:'מחולל הטפסים', body:'הצהרה על היעדר ניגוד עניינים וקרובי משפחה המועסקים בחברה.'},
+      {n:'אישור העסקה', cat:'אישורים', st:'הופק', c:'c-ok', v:'—', d:'01.07.2026', by:'מחולל המכתבים', sz:'88 KB', src:'מחולל המכתבים', body:'אישור העסקה לבקשת העובד/ת — פרטים אישיים, תקופת העסקה, היקף משרה ותפקיד.'},
+      {n:'תעודת הדרכת בטיחות', cat:'הדרכות', st:'נסרק', c:'c-ok', v:'—', d:'12.06.2026', by:'המערכת', sz:'210 KB', src:'מודול הדרכה', body:'תעודת סיום הדרכת בטיחות בעבודה, ציון 92, תוקף עד 12.06.2027.'},
+      {n:'כתב מינוי', cat:'טיפול בפרט', st:'הופק', c:'c-ok', v:'v1.0', d:'01.07.2026', by:'מחולל המכתבים', sz:'120 KB', src:'מחולל המכתבים', body:'כתב מינוי לתפקיד מנהל/ת תפעול, כולל תוספות וזכאויות הנגזרות מהמינוי.'}
+    ],
+    trainings:[
+      {n:'בטיחות בעבודה', req:'חובה', st:'הושלם', c:'c-ok', g:'92', exp:'12.06.2027'},
+      {n:'הגנת הפרטיות',  req:'חובה', st:'בתהליך', c:'c-run', g:'—', exp:'—'},
+      {n:'מניעת הטרדה',   req:'חובה', st:'לא התחיל', c:'c-stuck', g:'—', exp:'—'},
+      {n:'שירות לקוחות',  req:'רשות', st:'לא התחיל', c:'c-wait', g:'—', exp:'—'}
+    ],
+    assets:[
+      {n:'מחשב נייד Dell', st:'נמסר', c:'c-ok', d:'13.06.2026'},
+      {n:'טלפון נייד',     st:'נמסר', c:'c-ok', d:'13.06.2026'},
+      {n:'כרטיס תמו"ז',    st:'ממתין', c:'c-wait', d:'—'},
+      {n:'הרשאת הרמוני',   st:'פעילה', c:'c-ok', d:'10.06.2026'},
+      {n:'הרשאת VPN',      st:'ממתינה לאישור מנהל', c:'c-wait', d:'—'}
+    ],
+    growth:[
+      {n:'הערכת 3 חודשים', st:'מתוכננת', c:'c-wait', d:'10.09.2026'},
+      {n:'יעדי רבעון', st:'הוגדרו', c:'c-ok', d:'01.07.2026'}
+    ],
+    car:{ elig:true, grade:'דרגת ניידות ב׳', kind:'רכב שירות', plate:'88-412-63',
+          model:'טויוטה קורולה 2024', park:'חניון ראשי, מקום 47', toll:true,
+          quota:1200, used:840, last:'החלפת צמיגים · 02.06.2026', next:'טיפול 20,000 ק״מ · 09.2026' },
+    hier:{ path:['עמידר','חטיבת תפעול','אגף תפעול','מחלקת אחזקה'],
+           direct:'שרון אלון · מנהלת אגף תפעול',
+           indirect:'איזק מור · סמנכ״ל תפעול',
+           reports:['גיא רוזן · טכנאי','תמר אבידן · רכזת','אורי פרץ · טכנאי'] }
+  },
+  alerts:[
+    {c:'var(--red)',   b:'4 עובדים לא חתמו על NDA',       s:'הוותק הממוצע לחוסר: 9 ימים'},
+    {c:'var(--red)',   b:'הרשאות פתוחות ל-2 עובדים שעזבו', s:'VPN, הרמוני'},
+    {c:'var(--amber)', b:'7 הסמכות פגות ב-30 הימים הקרובים', s:'בטיחות, עבודה בגובה'},
+    {c:'var(--amber)', b:'תהליך קליטה תקוע — יוסי ברק',    s:'ממתין לטפסים 6 ימים'},
+    {c:'var(--amber)', b:'ציוד שלא הוחזר — עומר דגן',       s:'מחשב נייד, כרטיס כניסה'},
+    {c:'var(--blue)',  b:'12 הדרכות חובה לא הושלמו',        s:'ברובן: הגנת הפרטיות'}
+  ],
+  rules:[
+    {on:true,  w:'עובד קודם לתפקיד ניהולי', t:'שיוך הדרכת ניהול + עדכון מסלול קריירה', sla:'14 יום'},
+    {on:true,  w:'הדרכת חובה הושלמה',       t:'שליחת מסמך רגולציה לחתימה',             sla:'3 ימים'},
+    {on:true,  w:'עובד הגיש התפטרות',        t:'פתיחת תהליך החזרת ציוד וסגירת הרשאות',  sla:'מיידי'},
+    {on:false, w:'הסמכה פגה בעוד 30 יום',    t:'שליחת תזכורת לעובד ולמנהל',             sla:'יומי'}
+  ]
+};
+
+/* ---------------- תשתית ---------------- */
+const VIEWS = [
+  {id:'dash', label:'לוח בקרה',   sub:'מצב הארגון, התהליכים הפעילים וההתראות'},
+  {id:'cand', label:'מועמדים',    sub:'ממועמד ועד עובד — מסמכים, חתימות והפיכה לעובד', n:()=>CANDS.filter(c=>c.st!=='עובד'&&c.st!=='לא התייצב').length},
+  {id:'onb',  label:'קליטה',      sub:'תהליכי onboarding פעילים', n:()=>DB.onboarding.length},
+  {id:'life', label:'חיי עובד',   sub:'Employee Workspace — כרטיס עובד אישי'},
+  {id:'rec',  label:'גיוס',        sub:'ארבעה מסלולי גיוס, ועדות איתור וניקוד מועמדים'},
+  {id:'eval', label:'הערכת עובדים', sub:'מחזור הערכה — עצמית, מנהל ישיר, מנהל עקיף ושיחת משוב'},
+  {id:'srv',  label:'סקרים',       sub:'בניית שאלון, הגדרת אוכלוסייה וניתוח תוצאות'},
+  {id:'evt',  label:'אירועי רווחה', sub:'אירועים אישיים ואירועי ילדים — מתנות, ספקים וזכאות ימי חופש', n:()=>EVENTS.filter(e=>e.st==='ממתין').length},
+  {id:'tkn',  label:'תקן ומצבה',   sub:'תקנים, איוש בפועל וחריגות'},
+  {id:'cod',  label:'מערכים',      sub:'טבלאות הקוד שמאחורי השדות — ערכים, שימוש ותוקף', n:()=>CODES.length},
+  {id:'org',  label:'מבנה ארגוני', sub:'עץ ארגוני עם תקן ומצבה בכל צומת'},
+  {id:'off',  label:'עזיבה',      sub:'תהליכי offboarding פעילים', n:()=>DB.offboarding.length},
+  {id:'send', label:'שליחה', sub:'שליחת מסמכים והדרכות לעובד, לקבוצה או לפי סגמנט'},
+  {id:'flow', label:'מנוע תהליכים', sub:'חוקים אוטומטיים מבוססי אירוע'},
+  {id:'port', label:'פורטל עובד', sub:'מה שהעובד רואה מהצד שלו'}
+];
+let cur = 'dash', openProc = null, lifeTab = 'timeline', onbFilter = 'all';
+let profile = 'pub';
+const PROFILES = {
+  pub: {label:'ציבורי', hide:[], rename:{rec:'גיוס ומכרזים', eval:'הערכת עובדים', tkn:'תקן ומצבה'},
+        sub:{rec:'ועדות איתור, מכרז פנימי וחיצוני, פרוטוקולים וכתבי מינוי'},
+        note:'פרופיל ציבורי: ועדות איתור, אישור רשות החברות, כתבי מינוי, קידום דרגות, מעבר לקביעות, הסכמים קיבוציים ותקן מחייב.'},
+  priv:{label:'פרטי', hide:['tkn'], rename:{rec:'גיוס', eval:'הערכות ויעדים', org:'מבנה ארגוני'},
+        sub:{rec:'משרות, מועמדים, ראיונות והצעת עבודה'},
+        note:'פרופיל פרטי: הצעת עבודה במקום כתב מינוי, יעדים ובונוסים, גיוס מהיר בלי ועדה, בלי תקן מחייב ובלי דרגות.'}
+};
+function drawProf(){
+  const P = PROFILES[profile];
+  document.getElementById('profsw').innerHTML =
+    `<div class="proflbl">פרופיל ארגוני</div><div class="prof">
+      ${Object.entries(PROFILES).map(([k,v])=>`<button data-p="${k}" aria-pressed="${profile===k}">${v.label}</button>`).join('')}
+    </div>`;
+  document.querySelectorAll('[data-p]').forEach(b => b.onclick = () => {
+    profile = b.dataset.p;
+    if (PROFILES[profile].hide.includes(cur)) cur = 'dash';
+    toast('הוחלף לפרופיל ' + PROFILES[profile].label + ' — התפריט והמסכים הותאמו');
+    draw();
+  });
+}
+
+const el = (h) => { const d = document.createElement('div'); d.innerHTML = h.trim(); return d.firstElementChild; };
+const $ = (s) => document.querySelector(s);
+function toast(m){ const t = $('#toast'); t.textContent = m; t.classList.add('on'); clearTimeout(t._h); t._h = setTimeout(()=>t.classList.remove('on'), 1800); }
+
+function drawNav(){
+  const P = PROFILES[profile];
+  $('#nav').innerHTML = VIEWS.filter(v => !P.hide.includes(v.id)).map(v =>
+    `<button data-v="${v.id}" ${v.id===cur?'aria-current="true"':''}>${P.rename[v.id]||v.label}${v.n?`<span class="n">${v.n()}</span>`:''}</button>`).join('');
+  $('#nav').querySelectorAll('button').forEach(b => b.onclick = () => go(b.dataset.v));
+}
+function go(id){ cur = id; openProc = null; draw(); }
+
+function draw(){
+  const v = VIEWS.find(x => x.id === cur), P = PROFILES[profile];
+  $('#v-title').textContent = P.rename[v.id] || v.label;
+  $('#v-sub').textContent = (P.sub && P.sub[v.id]) || v.sub;
+  $('#v-action').innerHTML = '';
+  drawProf(); drawNav();
+  ({dash:dash, cand:cands, onb:()=>procList('onboarding'), off:()=>procList('offboarding'), life:life, rec:recruit, eval:evals, srv:surveys, evt:welfare, cod:codes, tkn:headcount, org:orgTree, send:send, flow:flow, port:portal})[cur]();
+}
+
+/* ---------------- לוח בקרה ---------------- */
+function dash(){
+  const kpis = [
+    {b:DB.onboarding.length, s:'onboarding פעילים', go:'onb'},
+    {b:DB.offboarding.length, s:'offboarding פעילים', go:'off'},
+    {b:'248', s:'עובדים פעילים'},
+    {b:'9', s:'מסמכים חסרים', c:'warn'},
+    {b:'12', s:'הדרכות לא הושלמו', c:'warn'},
+    {b:'7', s:'הסמכות פגות תוקף', c:'warn'},
+    {b:'15', s:'משימות HR פתוחות'},
+    ...(profile === 'pub' ? [{b:'4', s:'ממתינים לקביעות', c:'warn'}] : [{b:'6', s:'יעדים ללא הגדרה', c:'warn'}]),
+    {b:'3', s:'עובדים בסיכון compliance', c:'bad'}
+  ];
+  const funnel = [['Candidate',18],['Onboarding',4],['Active Employee',248],['Internal Transition',6],['Offboarding',2],['Alumni',63]];
+  const max = 248;
+  const procs = [...DB.onboarding.map(p=>({...p,type:'קליטה',view:'onb'})), ...DB.offboarding.map(p=>({...p,type:'עזיבה',view:'off'}))];
+
+  $('#view').innerHTML = `
+    <div class="grid kpis" style="margin-bottom:12px">
+      ${kpis.map((k,i)=>`<button class="kpi ${k.c||''}" data-go="${k.go||''}" style="border:.5px solid var(--line2)">
+        <b>${k.b}</b><span>${k.s}</span></button>`).join('')}
+    </div>
+    <div class="cols">
+      <div class="card pad">
+        <h2>תהליכים פעילים</h2>
+        <table><thead><tr><th>עובד</th><th>תהליך</th><th>שלב</th><th>התקדמות</th><th>אחראי</th><th>סטטוס</th></tr></thead><tbody>
+        ${procs.map(p=>`<tr class="click" data-p="${p.id}" data-v="${p.view}">
+          <td>${p.name}</td><td>${p.type}</td>
+          <td style="color:var(--muted);font-size:12px">${(p.view==='onb'?ONB_STEPS:OFF_STEPS)[Math.min(p.done,7)]}</td>
+          <td><div class="bar" style="width:84px"><i style="width:${p.done/8*100}%"></i></div></td>
+          <td style="font-size:12px">${p.owner}</td>
+          <td><span class="chip ${p.done===8?'c-ok':p.stuck?'c-stuck':'c-run'}">${p.done===8?'הושלם':p.stuck?'תקוע':'בתהליך'}</span></td></tr>`).join('')}
+        </tbody></table>
+        <h2 style="margin-top:18px">Lifecycle Funnel</h2>
+        <div class="funnel">${funnel.map(([n,v])=>`<div><span>${n}</span>
+          <span class="fb" style="width:${Math.max(9, v/max*100)}%">${v}</span></div>`).join('')}</div>
+      </div>
+      <div>
+        <div class="card pad" style="margin-bottom:12px"><h2>התראות</h2>
+          ${DB.alerts.map(a=>`<div class="alert"><span class="dot" style="background:${a.c}"></span>
+            <span><b style="font-weight:500">${a.b}</b><small>${a.s}</small></span></div>`).join('')}
+        </div>
+        <div class="card pad" style="margin-bottom:12px"><h2>פרופיל ארגוני פעיל</h2>
+          <p style="font-size:12.5px;color:var(--muted);margin:0">${PROFILES[profile].note}</p>
+          <p style="font-size:11.5px;color:var(--faint);margin:8px 0 0">המעבר בין פרופילים הוא קונפיגורציה — מערכים, תהליכים ותבניות מסמכים — ולא פיתוח.</p>
+        </div>
+        <div class="card pad"><h2>פעולות מהירות</h2><div class="qa">
+          ${['פתיחת קליטה','פתיחת עזיבה','שליחת מסמך','שיוך הדרכה','יצירת תהליך','שליחת תזכורת'].map(t=>`<button data-qa="${t}">${t}</button>`).join('')}
+        </div></div>
+      </div>
+    </div>`;
+  $('#view').querySelectorAll('[data-go]').forEach(b => b.onclick = () => b.dataset.go && go(b.dataset.go));
+  $('#view').querySelectorAll('tr[data-p]').forEach(r => r.onclick = () => { cur = r.dataset.v; openProc = r.dataset.p; draw(); });
+  $('#view').querySelectorAll('[data-qa]').forEach(b => b.onclick = () => {
+    const t = b.dataset.qa;
+    if (t === 'שליחת מסמך' || t === 'שיוך הדרכה' || t === 'שליחת תזכורת') go('send'); else toast('דמו: ' + t);
+  });
+}
+
+
+/* ---------------- מועמד עד עובד ---------------- */
+const CST = ['מועמד','נבחר','חתם','ממתין להתייצבות','עובד'];
+const CANDS = [
+  {n:'ליאת אבידן', tz:'0••••••82', job:'רכזת שכר', unit:'כספים', start:'01.10.2026', phone:'054-***-2210', st:'ממתין להתייצבות', clock:'07:12',
+   docs:[{n:'חוזה העסקה', s:'נחתם'},{n:'טופס היעדר ניגוד עניינים', s:'נחתם'},{n:'נוהל אבטחת מידע', s:'ממתין לאישור קריאה'},{n:'טופס 101', s:'נחסם עד התייצבות'}]},
+  {n:'רועי מזרחי', tz:'0••••••14', job:'טכנאי שטח', unit:'שירות', start:'12.10.2026', phone:'052-***-7743', st:'חתם', clock:null,
+   docs:[{n:'חוזה העסקה', s:'נחתם'},{n:'NDA', s:'ממתין לחתימה'},{n:'טופס 101', s:'נחסם עד התייצבות'}]},
+  {n:'שירה גל', tz:'0••••••57', job:'מפתחת', unit:'פיתוח', start:'20.10.2026', phone:'053-***-1188', st:'נבחר', clock:null,
+   docs:[{n:'חוזה העסקה', s:'נשלח לחתימה'},{n:'NDA', s:'נשלח לחתימה'}]},
+  {n:'עמית כהן', tz:'0••••••31', job:'מפתח', unit:'פיתוח', start:'—', phone:'050-***-6602', st:'מועמד', clock:null, docs:[]},
+  {n:'תמר רוזן', tz:'0••••••99', job:'איש מכירות', unit:'מכירות', start:'—', phone:'058-***-3320', st:'מועמד', clock:null, docs:[]}
+];
+let openCand = 0, candFilter = 'הכל', newCand = false;
+
+function cands(){
+  const list = CANDS.filter(c => candFilter === 'הכל' || c.st === candFilter);
+  const c = CANDS[openCand];
+  const nudge = CANDS.find(x => x.clock && x.st === 'ממתין להתייצבות');
+  $('#v-action').innerHTML = `<button class="primary">${newCand ? 'ביטול' : 'פתיחת מועמד/ת'}</button>`;
+  $('#v-action').firstElementChild.onclick = () => { newCand = !newCand; cands(); };
+  $('#view').innerHTML = `
+    ${nudge ? `<div class="counter" style="margin-bottom:12px">
+      <p><b style="font-weight:600">${nudge.n}</b> דיווחה נוכחות היום ב-${nudge.clock} — להפוך לעובדת?</p>
+      <button id="nudge">הפיכה לעובד/ת ←</button></div>` : ''}
+    <div class="tools">
+      <div class="filters">${['הכל', ...CST, 'לא התייצב'].map(f=>`<button data-f="${f}" aria-pressed="${candFilter===f}">${f}</button>`).join('')}</div>
+    </div>
+    <div class="cols">
+      <div class="card pad">
+        <table><thead><tr><th>שם</th><th>משרה</th><th>תחילת עבודה</th><th>מסמכים</th><th>סטטוס</th></tr></thead><tbody>
+        ${list.length ? list.map(x => `<tr class="click" data-c="${CANDS.indexOf(x)}" ${CANDS.indexOf(x)===openCand?'style="background:var(--orange-soft)"':''}>
+          <td><b style="font-weight:500;font-size:13px">${x.n}</b><br><small style="color:var(--faint);font-size:11px">ת.ז. ${x.tz}</small></td>
+          <td style="font-size:12.5px">${x.job}<br><small style="color:var(--faint);font-size:11px">${x.unit}</small></td>
+          <td style="font-size:12.5px">${x.start}</td>
+          <td style="font-size:12.5px">${x.docs.filter(d=>d.s==='נחתם').length}/${x.docs.length||'—'}</td>
+          <td><span class="chip ${x.st==='עובד'?'c-ok':x.st==='לא התייצב'?'c-stuck':x.st==='מועמד'?'c-wait':'c-run'}">${x.st}</span></td></tr>`).join('')
+        : '<tr><td colspan="5" style="color:var(--faint);font-size:12.5px">אין מועמדים בסטטוס זה</td></tr>'}
+        </tbody></table>
+        <p style="font-size:11.5px;color:var(--faint);margin:10px 0 0">רשומה אחת לכל אדם, מזוהה בת.ז. ההפיכה לעובד היא שינוי סטטוס — לא העברת נתונים בין ישויות.</p>
+      </div>
+      <div class="card pad" id="cdt"></div>
+    </div>`;
+  $('#view').querySelectorAll('[data-f]').forEach(b => b.onclick = () => { candFilter = b.dataset.f; cands(); });
+  $('#view').querySelectorAll('tr[data-c]').forEach(r => r.onclick = () => { openCand = +r.dataset.c; cands(); });
+  if (nudge) $('#nudge').onclick = () => { openCand = CANDS.indexOf(nudge); convert(); };
+
+  if (newCand){
+    $('#cdt').innerHTML = `
+      <h2>פתיחת רשומת מועמד/ת</h2>
+      <p style="font-size:11.5px;color:var(--faint);margin:-6px 0 12px">הרשומה נפתחת בסטטוס "מועמד". ת.ז. היא השדה המוביל — אם האדם כבר קיים במערכת, נתחבר לרשומה הקיימת.</p>
+      <div class="grid" style="grid-template-columns:1fr 1fr;gap:10px">
+        <div><div style="font-size:11px;color:var(--faint);margin-bottom:4px">שם מלא *</div>
+          <input id="f-n" placeholder="שם פרטי ומשפחה" style="width:100%;border:.5px solid var(--line2);border-radius:8px;padding:7px 10px;font:inherit;font-size:13px"></div>
+        <div><div style="font-size:11px;color:var(--faint);margin-bottom:4px">תעודת זהות *</div>
+          <input id="f-tz" inputmode="numeric" maxlength="9" placeholder="9 ספרות" style="width:100%;border:.5px solid var(--line2);border-radius:8px;padding:7px 10px;font:inherit;font-size:13px"></div>
+        <div><div style="font-size:11px;color:var(--faint);margin-bottom:4px">טלפון נייד * <small>לאימות בקוד חד-פעמי</small></div>
+          <input id="f-ph" inputmode="tel" placeholder="05X-XXXXXXX" style="width:100%;border:.5px solid var(--line2);border-radius:8px;padding:7px 10px;font:inherit;font-size:13px"></div>
+        <div><div style="font-size:11px;color:var(--faint);margin-bottom:4px">דוא״ל</div>
+          <input id="f-ml" placeholder="name@example.com" style="width:100%;border:.5px solid var(--line2);border-radius:8px;padding:7px 10px;font:inherit;font-size:13px"></div>
+        <div><div style="font-size:11px;color:var(--faint);margin-bottom:4px">משרה *</div>
+          <select id="f-job" style="width:100%">${[...new Set(JOBS.map(j=>j.title))].concat(['רכז/ת שכר','טכנאי/ת שטח','מפתח/ת']).map(x=>`<option>${x}</option>`).join('')}</select></div>
+        <div><div style="font-size:11px;color:var(--faint);margin-bottom:4px">יחידה *</div>
+          <select id="f-un" style="width:100%">${DEPTS.map(x=>`<option>${x}</option>`).join('')}</select></div>
+        <div><div style="font-size:11px;color:var(--faint);margin-bottom:4px">מקור המועמדות</div>
+          <select id="f-src" style="width:100%">${['מכרז פנימי','מכרז חיצוני','ועדת איתור','חברת גיוס','פנייה ישירה','המלצת עובד'].map(x=>`<option>${x}</option>`).join('')}</select></div>
+        <div><div style="font-size:11px;color:var(--faint);margin-bottom:4px">תחילת עבודה צפויה</div>
+          <input type="date" id="f-st" style="width:100%;border:.5px solid var(--line2);border-radius:8px;padding:6px 10px;font:inherit;font-size:13px"></div>
+      </div>
+      <div style="margin-top:10px"><div style="font-size:11px;color:var(--faint);margin-bottom:4px">קורות חיים ומסמכים</div>
+        <div id="f-dz" style="border:1px dashed #C9BFB8;border-radius:9px;padding:12px;text-align:center;font-size:12.5px;color:var(--faint)">גרירת קובץ לכאן תצרף אותו לתיק המועמד</div></div>
+      <div class="counter" style="margin-top:12px"><p>בסטטוס "מועמד" הרשומה אינה צורכת תקן, אינה משודרת לשכר ולנוכחות ואינה מופיעה במצבת העובדים</p></div>
+      <div style="display:flex;gap:8px;margin-top:12px">
+        <button class="primary" id="f-save" style="flex:1">פתיחת רשומה</button>
+      </div>`;
+    const dz = document.getElementById('f-dz');
+    dz.ondragover = ev => { ev.preventDefault(); dz.style.borderColor = 'var(--orange)'; };
+    dz.ondragleave = () => dz.style.borderColor = '';
+    dz.ondrop = ev => { ev.preventDefault(); dz.style.borderColor = ''; toast('הקובץ צורף לתיק המועמד'); };
+    document.getElementById('f-save').onclick = () => {
+      const n = document.getElementById('f-n').value.trim(),
+            tz = document.getElementById('f-tz').value.trim(),
+            ph = document.getElementById('f-ph').value.trim();
+      if (!n || !tz || !ph) return toast('שם, ת.ז. וטלפון הם שדות חובה');
+      if (!/^\d{9}$/.test(tz)) return toast('ת.ז. חייבת להכיל 9 ספרות');
+      const dup = CANDS.find(x => x.tz.slice(-2) === tz.slice(-2));
+      const stv = document.getElementById('f-st').value;
+      CANDS.unshift({ n, tz: '0••••••' + tz.slice(-2), job: document.getElementById('f-job').value,
+        unit: document.getElementById('f-un').value, phone: ph.replace(/(\d{3}).*(\d{4})/, '$1-***-$2'),
+        start: stv ? stv.split('-').reverse().join('.') : '—', st: 'מועמד', clock: null, docs: [] });
+      openCand = 0; newCand = false;
+      toast(dup ? 'נמצאה התאמה בת.ז. — יש לבדוק אם מדובר באדם שכבר קיים במערכת' : 'רשומת המועמד/ת נפתחה בסטטוס "מועמד"');
+      cands();
+    };
+    return;
+  }
+  const i = CST.indexOf(c.st);
+  const perm = [
+    ['קבלת מסמכים לחתימה', i >= 1], ['חתימה דיגיטלית', i >= 1], ['צריכת תקן', i >= 1],
+    ['ממשק לשכר ולנוכחות', i >= 4], ['משתמש והרשאות', i >= 4], ['מצבת עובדים ודוחות', i >= 4]
+  ];
+  $('#cdt').innerHTML = `
+    <h2>${c.n}</h2>
+    <div style="display:flex;gap:5px;flex-wrap:wrap;margin-bottom:12px">
+      ${CST.map((st, j) => `<span class="chip ${j<i?'c-ok':j===i?'c-run':'c-wait'}">${st}</span>`).join('')}
+    </div>
+    <div class="snap" style="margin-bottom:12px">
+      <div><span>משרה</span>${c.job}</div><div><span>יחידה</span>${c.unit}</div>
+      <div><span>תחילת עבודה</span>${c.start}</div><div><span>טלפון לאימות</span>${c.phone}</div>
+    </div>
+    <h2>מה מותר בסטטוס זה</h2>
+    ${perm.map(([t, ok]) => `<div style="display:flex;justify-content:space-between;padding:6px 0;border-top:.5px solid var(--line);font-size:12.5px">
+      <span>${t}</span><span class="chip ${ok?'c-ok':'c-stuck'}">${ok?'מותר':'חסום'}</span></div>`).join('')}
+    <h2 style="margin-top:16px">מסמכים ${i>=4?'בתיק העובד':'בתיק המועמד'}</h2>
+    ${c.docs.length ? c.docs.map(d=>`<div style="display:flex;justify-content:space-between;padding:7px 0;border-top:.5px solid var(--line);font-size:12.5px">
+        <span>${d.n}</span><span class="chip ${d.s==='נחתם'?'c-ok':d.s.indexOf('נחסם')===0?'c-stuck':'c-wait'}">${d.s}</span></div>`).join('')
+      : '<p style="font-size:12.5px;color:var(--faint);margin:0">טרם נשלחו מסמכים. שליחה אפשרית מסטטוס "נבחר" ואילך.</p>'}
+    <p style="font-size:11.5px;color:var(--faint);margin:10px 0 0">המועמד נכנס בקישור אישי במסרון עם קוד חד-פעמי לטלפון שברשומה — בלי משתמש בארגון.</p>
+    <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:12px">
+      ${i===0 ? '<button class="primary" id="a1">סימון כנבחר/ת</button>' : ''}
+      ${i===1 ? '<button class="primary" id="a2">שליחת מסמכים לחתימה</button>' : ''}
+      ${i===2 ? '<button class="primary" id="a3">אישור קליטה — ממתין להתייצבות</button>' : ''}
+      ${i===3 ? '<button class="primary" id="a4">הפיכה לעובד/ת</button>' : ''}
+      ${i>0 && i<4 ? '<button class="ghost" id="no" style="border:.5px solid var(--line2);background:#fff;border-radius:8px;padding:8px 14px;font-size:13px;color:var(--soft)">לא התייצב/ה</button>' : ''}
+      ${i===4 ? '<button class="primary" id="goemp">פתיחת תיק העובד ←</button>' : ''}
+    </div>`;
+  const on = (id, fn) => { const b = document.getElementById(id); if (b) b.onclick = fn; };
+  on('a1', () => { c.st = 'נבחר'; toast('סומן/ה כנבחר/ת · תקן שוריין ביחידת ' + c.unit); cands(); });
+  on('a2', () => { c.st = 'חתם';
+    c.docs = [{n:'חוזה העסקה', s:'נשלח לחתימה'},{n:'NDA', s:'נשלח לחתימה'},{n:'טופס 101', s:'נחסם עד התייצבות'}];
+    toast('מסרון עם קישור אישי נשלח · אימות בקוד חד-פעמי'); cands(); });
+  on('a3', () => { c.st = 'ממתין להתייצבות'; toast('ממתין להתייצבות ביום ' + c.start); cands(); });
+  on('a4', convert);
+  on('no', () => { c.st = 'לא התייצב'; toast('התקן השוחרר · הגישה נחסמה · המסמכים נשמרים לתקופת השימור'); cands(); });
+  on('goemp', () => go('life'));
+}
+function convert(){
+  const c = CANDS[openCand];
+  c.st = 'עובד';
+  c.docs = c.docs.map(d => d.s.indexOf('נחסם') === 0 ? {n:d.n, s:'נפתח למילוי'} : d);
+  toast('הפך/ה לעובד/ת · הוקצה מספר עובד · התיק והמסמכים עברו עם החתימות · התקן מאויש · שודר לשכר, לנוכחות ול-AD');
+  cands();
+}
+
+/* ---------------- קליטה / עזיבה ---------------- */
+function procList(kind){
+  const steps = kind === 'onboarding' ? ONB_STEPS : OFF_STEPS;
+  const list = DB[kind];
+  $('#v-action').innerHTML = `<button class="primary">${kind==='onboarding'?'פתיחת תהליך קליטה':'פתיחת תהליך עזיבה'}</button>`;
+  $('#v-action').firstElementChild.onclick = () => toast('דמו: טופס פתיחת תהליך');
+
+  const proc = list.find(p => p.id === openProc);
+  $('#view').innerHTML = `
+    <div class="tools">
+      <input placeholder="חיפוש עובד" id="q">
+      <div class="filters">${[['all','הכל'],['run','בתהליך'],['stuck','תקוע'],['done','הושלם']]
+        .map(([k,l])=>`<button data-f="${k}" aria-pressed="${onbFilter===k}">${l}</button>`).join('')}</div>
+    </div>
+    <div class="cols">
+      <div class="card pad">
+        <table><thead><tr><th>עובד</th><th>תפקיד</th><th>תאריך</th><th>התקדמות</th><th>סטטוס</th></tr></thead><tbody id="rows"></tbody></table>
+      </div>
+      <div class="card pad" id="detail">${proc ? '' : '<h2>פרטי תהליך</h2><p style="color:var(--faint);font-size:12.5px;margin:0">בחר/י תהליך מהרשימה כדי לראות את השלבים, המסמכים והיומן.</p>'}</div>
+    </div>`;
+
+  const rows = () => {
+    const q = ($('#q').value || '').trim();
+    $('#rows').innerHTML = list.filter(p => {
+      if (q && !(p.name + p.role + p.dept).includes(q)) return false;
+      if (onbFilter === 'done') return p.done === 8;
+      if (onbFilter === 'stuck') return p.stuck;
+      if (onbFilter === 'run') return p.done < 8 && !p.stuck;
+      return true;
+    }).map(p => `<tr class="click" data-p="${p.id}" ${p.id===openProc?'style="background:var(--orange-soft)"':''}>
+      <td><b style="font-weight:500">${p.name}</b><br><small style="color:var(--faint);font-size:11px">${p.dept}</small></td>
+      <td style="font-size:12.5px">${p.role}</td><td style="font-size:12.5px">${p.start}</td>
+      <td><div class="bar" style="width:76px"><i style="width:${p.done/8*100}%"></i></div>
+          <small style="color:var(--faint);font-size:11px">${p.done} מתוך 8</small></td>
+      <td><span class="chip ${p.done===8?'c-ok':p.stuck?'c-stuck':'c-run'}">${p.done===8?'הושלם':p.stuck?'תקוע':'בתהליך'}</span></td></tr>`).join('')
+      || '<tr><td colspan="5" style="color:var(--faint);font-size:12.5px">לא נמצאו תהליכים</td></tr>';
+    $('#rows').querySelectorAll('tr[data-p]').forEach(r => r.onclick = () => { openProc = r.dataset.p; procList(kind); });
+  };
+  rows();
+  $('#q').oninput = rows;
+  $('#view').querySelectorAll('[data-f]').forEach(b => b.onclick = () => { onbFilter = b.dataset.f; procList(kind); });
+
+  if (!proc) return;
+  const extra = kind === 'offboarding'
+    ? `<div class="snap" style="margin-bottom:12px"><div><span>סיבת עזיבה</span>${proc.reason}</div><div><span>אופן עזיבה</span>${proc.mode}</div></div>` : '';
+  $('#detail').innerHTML = `
+    <h2>${proc.name} · ${kind==='onboarding'?'קליטה':'עזיבה'}</h2>
+    <div class="snap" style="margin-bottom:12px">
+      <div><span>תפקיד</span>${proc.role}</div><div><span>מחלקה</span>${proc.dept}</div>
+      <div><span>תאריך יעד</span>${proc.start}</div><div><span>אחראי/ת</span>${proc.owner}</div>
+    </div>${extra}
+    <div class="bar" style="margin-bottom:4px"><i style="width:${proc.done/8*100}%"></i></div>
+    <small style="color:var(--faint);font-size:11px">${proc.done} מתוך 8 שלבים הושלמו</small>
+    <ul class="steps" style="margin-top:10px">
+      ${steps.map((s,i)=>`<li class="${i<proc.done?'done':''}">
+        <input type="checkbox" data-s="${i}" ${i<proc.done?'checked':''}>
+        <span><b>${s}</b><small>${i<proc.done?'הושלם':(i===proc.done?(proc.stuck?'תקוע — ממתין לעובד':'השלב הנוכחי'):'ממתין')}</small></span></li>`).join('')}
+    </ul>
+    <h2 style="margin-top:16px">יומן פעולות</h2>
+    <div class="tl">${DB.employee.timeline.slice(0,3).map(t=>`<div><b>${t.b}</b><small>${t.t} · ${t.s}</small></div>`).join('')}</div>`;
+  $('#detail').querySelectorAll('[data-s]').forEach(c => c.onchange = () => {
+    const i = +c.dataset.s;
+    proc.done = c.checked ? Math.max(proc.done, i + 1) : Math.min(proc.done, i);
+    if (proc.done === 8) proc.stuck = false;
+    toast(c.checked ? 'השלב סומן כהושלם' : 'השלב הוחזר לממתין');
+    procList(kind);
+  });
+}
+
+/* ---------------- חיי עובד ---------------- */
+function life(){
+  const e = DB.employee;
+  const tabs = [['timeline','ציר זמן'],['docs','מסמכים וחתימות'],['train','הדרכות'],['assets','ציוד והרשאות'],['car','רכב וניידות'],['hier','היררכיה'],['growth','התפתחות']];
+  const tbl = (head, rows) => `<table><thead><tr>${head.map(h=>`<th>${h}</th>`).join('')}</tr></thead><tbody>${rows}</tbody></table>`;
+  const body = {
+    timeline: () => `<div class="tl">${e.timeline.map(t=>`<div><b>${t.b}</b><small>${t.t} · ${t.s}</small></div>`).join('')}</div>`,
+    docs: () => docsView(),
+    train: () => tbl(['הדרכה','חובה/רשות','סטטוס','ציון','תוקף'], e.trainings.map(t=>`<tr><td>${t.n}</td>
+      <td style="font-size:12px;color:var(--muted)">${t.req}</td><td><span class="chip ${t.c}">${t.st}</span></td>
+      <td style="font-size:12px">${t.g}</td><td style="font-size:12px">${t.exp}</td></tr>`).join('')),
+    assets: () => tbl(['פריט','סטטוס','תאריך'], e.assets.map(a=>`<tr><td>${a.n}</td>
+      <td><span class="chip ${a.c}">${a.st}</span></td><td style="font-size:12px">${a.d}</td></tr>`).join('')),
+    growth: () => tbl(['אירוע','סטטוס','תאריך'], e.growth.map(g=>`<tr><td>${g.n}</td>
+      <td><span class="chip ${g.c}">${g.st}</span></td><td style="font-size:12px">${g.d}</td></tr>`).join('')),
+    car: () => {
+      const v = e.car, pct = Math.round(v.used / v.quota * 100), over = v.used > v.quota;
+      return `<div class="snap" style="margin-bottom:14px">
+          <div><span>זכאות רכב עמידר</span><span class="chip ${v.elig?'c-ok':'c-wait'}">${v.elig?'זכאי/ת':'לא זכאי/ת'}</span></div>
+          <div><span>דרגת ניידות</span>${v.grade}</div>
+          <div><span>סוג רכב</span>${v.kind}</div>
+          <div><span>מספר רישוי</span>${v.plate}</div>
+          <div><span>דגם</span>${v.model}</div>
+          <div><span>מקום חניה מוקצה</span>${v.park}</div>
+          <div><span>מנוי כביש אגרה</span><span class="chip ${v.toll?'c-ok':'c-wait'}">${v.toll?'כן':'לא'}</span></div>
+        </div>
+        <h2>מכסת ק״מ חודשית</h2>
+        <div style="display:flex;align-items:baseline;gap:8px;margin-bottom:6px">
+          <b style="font-size:26px;font-weight:600;line-height:1;color:${over?'var(--red)':'var(--ink)'}">${v.used.toLocaleString()}</b>
+          <span style="font-size:12px;color:var(--muted)">מתוך ${v.quota.toLocaleString()} ק״מ · ${pct}%</span>
+        </div>
+        <div class="bar" style="margin-bottom:10px"><i style="width:${Math.min(100,pct)}%;background:${over?'var(--red)':'var(--orange)'}"></i></div>
+        <div style="display:flex;gap:8px;align-items:center;margin-bottom:14px">
+          <input type="number" id="kmadd" placeholder="דיווח ק״מ" style="width:120px;border:.5px solid var(--line2);border-radius:8px;padding:6px 9px;font:inherit;font-size:12.5px">
+          <button class="primary" id="kmbtn" style="padding:7px 13px">דיווח נסיעה</button>
+        </div>
+        <h2>אחזקה וטיפולים</h2>
+        ${tbl(['פעולה','מועד'], `<tr><td>טיפול אחרון</td><td style="font-size:12.5px">${v.last}</td></tr>
+                                 <tr><td>טיפול הבא</td><td style="font-size:12.5px">${v.next}</td></tr>`)}
+        <p style="font-size:11.5px;color:var(--faint);margin:10px 0 0">נתוני הרכב מסונכרנים בממשק דו-כיווני עם מערכת ניהול צי הרכב. חריגה מהמכסה נחסמת ודורשת אישור גורם מורשה.</p>`;
+    },
+    hier: () => {
+      const h = e.hier;
+      return `<div style="display:flex;flex-wrap:wrap;align-items:center;gap:6px;font-size:13px;margin-bottom:16px">
+          ${h.path.map((n, i) => `<span style="border:.5px solid var(--line2);border-radius:7px;padding:5px 10px;background:${i===h.path.length-1?'var(--orange-bg)':'#fff'};color:${i===h.path.length-1?'var(--orange-ink)':'var(--soft)'}">${n}</span>
+            ${i < h.path.length-1 ? '<span style="color:var(--faint)">←</span>' : ''}`).join('')}
+        </div>
+        <div class="snap" style="margin-bottom:16px">
+          <div><span>מנהל/ת ישיר/ה</span>${h.direct}</div>
+          <div><span>מנהל/ת עקיף/ה</span>${h.indirect}</div>
+          <div><span>רמה בעץ</span>רמה ${h.path.length} מתוך 5</div>
+        </div>
+        <h2>כפופים ישירות</h2>
+        ${tbl(['עובד/ת','פעולה'], h.reports.map(r=>`<tr><td style="font-size:13px">${r}</td>
+          <td><button class="goemp" style="border:.5px solid var(--line2);background:#fff;border-radius:7px;padding:4px 9px;font-size:12px">פתיחת תיק ←</button></td></tr>`).join(''))}
+        <p style="font-size:11.5px;color:var(--faint);margin:10px 0 0">אותה היררכיה משמשת את מסלול אישור הדיווחים בנוכחות ואת תחנות ההערכה — מנהל ישיר ואחריו מנהל עקיף.</p>`;
+    }
+  };
+  $('#view').innerHTML = `
+    <div class="card pad" style="margin-bottom:12px">
+      <div class="snap">
+        <div><span>עובד/ת</span><b style="font-weight:600">${e.name}</b></div>
+        <div><span>תפקיד</span>${e.role}</div><div><span>מחלקה</span>${e.dept}</div>
+        <div><span>מנהל/ת</span>${e.manager}</div><div><span>ותק</span>${e.seniority}</div>
+        <div><span>סטטוס</span><span class="chip c-run">${e.status}</span></div>
+      </div>
+      <div class="grid kpis" style="margin-top:12px">
+        <div class="kpi"><b>2</b><span>מסמכים ממתינים</span></div>
+        <div class="kpi warn"><b>2</b><span>הדרכות חובה פתוחות</span></div>
+        <div class="kpi"><b>3</b><span>פריטי ציוד</span></div>
+        <div class="kpi warn"><b>1</b><span>הרשאה ממתינה</span></div>
+      </div>
+    </div>
+    <div class="card pad">
+      <div class="tabs">${tabs.map(([k,l])=>`<button data-t="${k}" aria-selected="${lifeTab===k}">${l}</button>`).join('')}</div>
+      ${body[lifeTab]()}
+    </div>`;
+  $('#view').querySelectorAll('[data-t]').forEach(b => b.onclick = () => { lifeTab = b.dataset.t; life(); });
+  const kb = document.getElementById('kmbtn');
+  if (kb) kb.onclick = () => {
+    const v = DB.employee.car, add = +document.getElementById('kmadd').value || 0;
+    if (!add) return toast('יש להזין מספר ק״מ');
+    if (v.used + add > v.quota) return toast('חריגה ממכסת הק״מ — הדיווח נחסם ודורש אישור גורם מורשה');
+    v.used += add; toast('דווחו ' + add + ' ק״מ'); life();
+  };
+  $('#view').querySelectorAll('.goemp').forEach(b => b.onclick = () => toast('דמו: מעבר לתיק העובד הכפוף'));
+}
+
+
+
+/* ---------------- מסמכים בתיק העובד ---------------- */
+const DOCQ = {q:'', cat:'הכל', st:'הכל', sel:[], open:null};
+function docsView(){
+  const e = DB.employee;
+  const cats = ['הכל', ...new Set(e.docs.map(d => d.cat))];
+  const list = e.docs.filter(d => {
+    const q = DOCQ.q.trim();
+    if (q && !(d.n + ' ' + d.cat + ' ' + d.body + ' ' + d.by).includes(q)) return false;
+    if (DOCQ.cat !== 'הכל' && d.cat !== DOCQ.cat) return false;
+    if (DOCQ.st === 'ממתינים' && d.c !== 'c-wait') return false;
+    if (DOCQ.st === 'חתומים' && d.c !== 'c-ok') return false;
+    return true;
+  });
+  const prev = DOCQ.open ? e.docs.find(d => d.n === DOCQ.open) : null;
+  setTimeout(bindDocs, 0);
+  return `
+    <div class="tools" style="margin-bottom:10px">
+      <input id="dq" placeholder="חיפוש בשם, בקטגוריה ובתוכן המסמך" value="${DOCQ.q}" style="min-width:250px">
+      <select id="dcat">${cats.map(c=>`<option ${DOCQ.cat===c?'selected':''}>${c}</option>`).join('')}</select>
+      <select id="dst">${['הכל','ממתינים','חתומים'].map(c=>`<option ${DOCQ.st===c?'selected':''}>${c}</option>`).join('')}</select>
+      <button class="primary" id="dprint" ${DOCQ.sel.length?'':'style="opacity:.5"'}>הדפסת ${DOCQ.sel.length||'כל ה'}מסמכים</button>
+    </div>
+    <div style="display:grid;grid-template-columns:${prev?'1fr 1fr':'1fr'};gap:12px;align-items:start">
+      <div>
+        <table><thead><tr><th style="width:26px"></th><th>מסמך</th><th>קטגוריה</th><th>גרסה</th><th>סטטוס</th><th>תאריך</th></tr></thead><tbody>
+        ${list.length ? list.map(d => `<tr class="click" data-doc="${d.n}" ${DOCQ.open===d.n?'style="background:var(--orange-soft)"':''}>
+            <td style="padding:4px"><input type="checkbox" data-sel="${d.n}" ${DOCQ.sel.includes(d.n)?'checked':''} style="width:14px;height:14px;accent-color:var(--orange)"></td>
+            <td><b style="font-weight:500;font-size:13px">${d.n}</b><br><small style="color:var(--faint);font-size:11px">${d.src} · ${d.sz}</small></td>
+            <td style="font-size:12px;color:var(--muted)">${d.cat}</td>
+            <td style="font-size:12px;color:var(--muted)">${d.v}</td>
+            <td><span class="chip ${d.c}">${d.st}</span></td>
+            <td style="font-size:12px">${d.d}</td></tr>`).join('')
+          : '<tr><td colspan="6" style="color:var(--faint);font-size:12.5px">לא נמצאו מסמכים תואמים</td></tr>'}
+        </tbody></table>
+        <div id="dz" style="margin-top:10px;border:1px dashed var(--grey-line, #C9BFB8);border-radius:9px;padding:14px;
+             text-align:center;font-size:12.5px;color:var(--faint)">גרירת קובץ לכאן תוסיף אותו לתיק העובד</div>
+        <p style="font-size:11.5px;color:var(--faint);margin:8px 0 0">${list.length} מתוך ${e.docs.length} מסמכים · אין הגבלה על היקף המסמכים בתיק</p>
+      </div>
+      ${prev ? `<div class="card pad" style="position:sticky;top:12px">
+        <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:10px">
+          <div><h2 style="margin-bottom:3px">${prev.n}</h2>
+            <p style="margin:0;font-size:11.5px;color:var(--faint)">${prev.cat} · גרסה ${prev.v} · ${prev.sz}</p></div>
+          <button id="dclose" style="border:0;background:transparent;color:var(--faint);font-size:18px;line-height:1">×</button>
+        </div>
+        <div style="margin-top:10px;background:#fff;border:.5px solid var(--line2);border-radius:8px;padding:14px;
+             font-size:12.5px;line-height:1.9;min-height:150px">${prev.body}</div>
+        <div class="snap" style="margin-top:12px">
+          <div><span>סטטוס</span><span class="chip ${prev.c}">${prev.st}</span></div>
+          <div><span>תאריך</span>${prev.d}</div>
+          <div><span>נקלט על ידי</span>${prev.by}</div>
+        </div>
+        <p style="font-size:11.5px;color:var(--faint);margin:10px 0 0">הצפייה מתבצעת בלי לצאת מתיק העובד — סגירה מחזירה לאותו מסך.</p>
+      </div>` : ''}
+    </div>`;
+}
+function bindDocs(){
+  const q = document.getElementById('dq');
+  if (!q) return;
+  q.oninput = ev => { DOCQ.q = ev.target.value; life(); setTimeout(() => { const n = document.getElementById('dq'); if (n){ n.focus(); n.setSelectionRange(n.value.length, n.value.length); } }, 0); };
+  document.getElementById('dcat').onchange = ev => { DOCQ.cat = ev.target.value; life(); };
+  document.getElementById('dst').onchange  = ev => { DOCQ.st  = ev.target.value; life(); };
+  document.querySelectorAll('[data-doc]').forEach(r => r.onclick = ev => {
+    if (ev.target.matches('[data-sel]')) return;
+    DOCQ.open = DOCQ.open === r.dataset.doc ? null : r.dataset.doc; life();
+  });
+  document.querySelectorAll('[data-sel]').forEach(c => c.onchange = () => {
+    toggle(DOCQ.sel, c.dataset.sel); life();
+  });
+  const cl = document.getElementById('dclose');
+  if (cl) cl.onclick = () => { DOCQ.open = null; life(); };
+  document.getElementById('dprint').onclick = () =>
+    toast(DOCQ.sel.length ? 'הדפסת ' + DOCQ.sel.length + ' מסמכים בפקודה אחת' : 'הדפסת כל מסמכי התיק בפקודה אחת');
+  const dz = document.getElementById('dz');
+  dz.ondragover = ev => { ev.preventDefault(); dz.style.borderColor = 'var(--orange)'; };
+  dz.ondragleave = () => dz.style.borderColor = '';
+  dz.ondrop = ev => { ev.preventDefault(); dz.style.borderColor = ''; toast('הקובץ נקלט ומופתח לקטגוריה המתאימה'); };
+}
+
+/* ---------------- גיוס ---------------- */
+const TRACKS = ['בכירים','ועדת איתור','קיבוצי חיצוני','קיבוצי פנימי'];
+const STAGES = ['הגשת מועמדות','סינון','ראיון מנהל','ראיון מש"א','ועדה','הכרעה'];
+const JOBS = [
+  {id:'j1', title:'מנהל/ת מחלקת אחזקה', track:'ועדת איתור', unit:'תפעול', open:'02.06.2026',
+   cands:[{n:'רות אבידן', st:2, sc:[0,0,0]}, {n:'עמית גל', st:4, sc:[88,91,84]}, {n:'נועה פרץ', st:4, sc:[79,75,81]}]},
+  {id:'j2', title:'סמנכ"ל/ית כספים', track:'בכירים', unit:'הנהלה', open:'20.05.2026',
+   cands:[{n:'דור מזרחי', st:3, sc:[0,0,0]}, {n:'אורית רוזן', st:5, sc:[92,90,93]}]},
+  {id:'j3', title:'טכנאי/ת שטח', track:'קיבוצי חיצוני', unit:'שירות', open:'11.06.2026',
+   cands:[{n:'יובל כהן', st:1, sc:[0,0,0]}, {n:'ניר לוי', st:2, sc:[0,0,0]}, {n:'הילה ברק', st:3, sc:[0,0,0]}]},
+  {id:'j4', title:'רכז/ת שכר', track:'קיבוצי פנימי', unit:'כספים', open:'08.06.2026',
+   cands:[{n:'מיכל דגן', st:0, sc:[0,0,0]}, {n:'אסף שמש', st:2, sc:[0,0,0]}]}
+];
+let openJob = null;
+
+function recruit(){
+  const pub = profile === 'pub';
+  const jobs = pub ? JOBS : JOBS.filter(j => j.track !== 'ועדת איתור' && j.track !== 'בכירים');
+  const job = jobs.find(j => j.id === openJob);
+  $('#v-action').innerHTML = '<button class="primary">פתיחת תהליך גיוס</button>';
+  $('#v-action').firstElementChild.onclick = () => toast('דמו: פתיחת משרה חדשה');
+  $('#view').innerHTML = `
+    <div class="cols">
+      <div class="card pad">
+        <table><thead><tr><th>משרה</th><th>מסלול</th><th>יחידה</th><th>מועמדים</th><th>שלב נוכחי</th></tr></thead><tbody>
+        ${jobs.map(j => {
+          const st = Math.max(...j.cands.map(c => c.st));
+          return `<tr class="click" data-j="${j.id}" ${j.id===openJob?'style="background:var(--orange-soft)"':''}>
+            <td><b style="font-weight:500">${j.title}</b><br><small style="color:var(--faint);font-size:11px">נפתח ${j.open}</small></td>
+            <td style="font-size:12.5px">${j.track}</td><td style="font-size:12.5px">${j.unit}</td>
+            <td style="font-size:12.5px">${j.cands.length}</td>
+            <td><span class="chip ${st>=5?'c-ok':st>=3?'c-run':'c-wait'}">${STAGES[st]}</span></td></tr>`;
+        }).join('')}
+        </tbody></table>
+      </div>
+      <div class="card pad" id="jd">${job ? '' : '<h2>תיק משרה</h2><p style="color:var(--faint);font-size:12.5px;margin:0">בחר/י משרה כדי לראות את המועמדים, השלבים וניקוד הוועדה.</p>'}</div>
+    </div>`;
+  $('#view').querySelectorAll('tr[data-j]').forEach(r => r.onclick = () => { openJob = r.dataset.j; recruit(); });
+  if (!job) return;
+
+  const counts = STAGES.map((_, i) => job.cands.filter(c => c.st >= i).length);
+  const comm = pub && (job.track === 'ועדת איתור' || job.track === 'בכירים');
+  $('#jd').innerHTML = `
+    <h2>${job.title}</h2>
+    <div class="funnel" style="margin-bottom:12px">
+      ${STAGES.map((s, i) => `<div><span>${s}</span><span class="fb" style="width:${Math.max(11, counts[i]/job.cands.length*100)}%">${counts[i]}</span></div>`).join('')}
+    </div>
+    <table><thead><tr><th>מועמד/ת</th><th>שלב</th>${comm?'<th colspan="3">ניקוד חברי הוועדה</th><th>ממוצע</th>':'<th></th>'}</tr></thead><tbody>
+      ${job.cands.map((c, ci) => {
+        const avg = c.sc.some(x => x > 0) ? Math.round(c.sc.reduce((a, b) => a + b, 0) / 3) : null;
+        return `<tr><td style="font-size:13px">${c.n}</td>
+          <td><span class="chip ${c.st>=5?'c-ok':c.st>=3?'c-run':'c-wait'}">${STAGES[c.st]}</span></td>
+          ${comm ? c.sc.map((v, si) => `<td style="padding:4px"><input type="number" min="0" max="100" value="${v||''}" data-c="${ci}" data-s="${si}"
+             style="width:48px;border:.5px solid var(--line2);border-radius:6px;padding:4px;font:inherit;font-size:12px;text-align:center"></td>`).join('')
+             + `<td style="font-weight:600;font-size:13px">${avg ?? '—'}</td>`
+           : `<td><button data-adv="${ci}" style="border:.5px solid var(--line2);background:#fff;border-radius:7px;padding:4px 9px;font-size:12px">קדם שלב ←</button></td>`}
+        </tr>`;
+      }).join('')}
+    </tbody></table>
+    ${comm ? `<p style="font-size:11.5px;color:var(--faint);margin:10px 0 0">הציון הסופי הוא ממוצע חברי הוועדה. המערכת מפיקה פרוטוקול ומכתבי זכייה/אי-זכייה לכל המתמודדים.</p>
+      <button class="primary" id="proto" style="width:100%;margin-top:10px">הפקת פרוטוקול ומכתבים</button>`
+      : `<p style="font-size:11.5px;color:var(--faint);margin:10px 0 0">בפרופיל פרטי אין ועדת ניקוד — המנהל המגייס מקבל החלטה ישירה, והמערכת מפיקה הצעת עבודה.</p>
+         <button class="primary" id="proto" style="width:100%;margin-top:10px">הפקת הצעת עבודה</button>`}`;
+  $('#jd').querySelectorAll('[data-c]').forEach(inp => inp.onchange = () => {
+    job.cands[+inp.dataset.c].sc[+inp.dataset.s] = +inp.value || 0; recruit();
+  });
+  $('#jd').querySelectorAll('[data-adv]').forEach(b => b.onclick = () => {
+    const c = job.cands[+b.dataset.adv];
+    c.st = Math.min(STAGES.length - 1, c.st + 1);
+    toast(c.n + ' — ' + STAGES[c.st]); recruit();
+  });
+  const pr = $('#proto');
+  if (pr) pr.onclick = () => toast('דמו: פרוטוקול ומכתבים הופקו ונשמרו בתיק המועמד');
+}
+
+/* ---------------- הערכת עובדים ---------------- */
+const EV_STATIONS = ['הערכה עצמית','מנהל ישיר','מנהל עקיף','שיחת משוב'];
+const CRITERIA = [['מקצועיות', 30], ['עמידה ביעדים', 30], ['עבודת צוות', 20], ['שירות', 10], ['יוזמה', 10]];
+const EVALS = [
+  {n:'דנה לוי',   unit:'תפעול',  st:2, sc:[4,5,4,4,3]},
+  {n:'יוסי ברק',  unit:'שירות',  st:1, sc:[3,3,4,4,3]},
+  {n:'מאיה כהן',  unit:'פיתוח',  st:4, sc:[5,5,5,4,5]},
+  {n:'אבי נחום',  unit:'לוגיסטיקה', st:0, sc:[0,0,0,0,0]},
+  {n:'רונית שמש', unit:'כספים',  st:3, sc:[4,4,3,5,4]}
+];
+let openEval = null;
+const evScore = e => e.sc.every(x => x === 0) ? null
+  : Math.round(CRITERIA.reduce((a, c, i) => a + e.sc[i] * c[1], 0) / 5);
+
+function evals(){
+  const e = EVALS[openEval];
+  $('#v-action').innerHTML = '<button class="primary">פתיחת מחזור הערכה</button>';
+  $('#v-action').firstElementChild.onclick = () => toast('דמו: הפצת הודעה לכלל העובדים עם לינק לטופס');
+  $('#view').innerHTML = `
+    <div class="grid kpis" style="margin-bottom:12px">
+      <div class="kpi"><b>${EVALS.filter(x=>x.st===4).length}</b><span>הושלמו</span></div>
+      <div class="kpi"><b>${EVALS.filter(x=>x.st>0&&x.st<4).length}</b><span>בתהליך</span></div>
+      <div class="kpi warn"><b>${EVALS.filter(x=>x.st===0).length}</b><span>טרם החלו</span></div>
+      <div class="kpi"><b>מחזור שנתי</b><span>2026</span></div>
+    </div>
+    <div class="cols">
+      <div class="card pad">
+        <table><thead><tr><th>עובד/ת</th><th>יחידה</th><th>תחנה נוכחית</th><th>התקדמות</th><th>ציון</th></tr></thead><tbody>
+        ${EVALS.map((x, i) => `<tr class="click" data-e="${i}" ${i===openEval?'style="background:var(--orange-soft)"':''}>
+          <td style="font-size:13px">${x.n}</td><td style="font-size:12.5px;color:var(--muted)">${x.unit}</td>
+          <td><span class="chip ${x.st===4?'c-ok':x.st===0?'c-stuck':'c-run'}">${x.st===4?'הושלם':EV_STATIONS[x.st]}</span></td>
+          <td><div class="bar" style="width:70px"><i style="width:${x.st/4*100}%"></i></div></td>
+          <td style="font-weight:600">${evScore(x) ?? '—'}</td></tr>`).join('')}
+        </tbody></table>
+      </div>
+      <div class="card pad" id="ed">${e ? '' : '<h2>טופס הערכה</h2><p style="color:var(--faint);font-size:12.5px;margin:0">בחר/י עובד/ת כדי למלא את טופס ההערכה ולראות את חישוב הציון.</p>'}</div>
+    </div>`;
+  $('#view').querySelectorAll('tr[data-e]').forEach(r => r.onclick = () => { openEval = +r.dataset.e; evals(); });
+  if (!e) return;
+  $('#ed').innerHTML = `
+    <h2>${e.n} · מחזור 2026</h2>
+    <div style="display:flex;gap:6px;margin-bottom:12px;flex-wrap:wrap">
+      ${EV_STATIONS.map((s, i) => `<span class="chip ${i<e.st?'c-ok':i===e.st?'c-run':'c-wait'}">${s}</span>`).join('')}
+    </div>
+    ${CRITERIA.map((c, i) => `<div class="crit">
+      <span style="font-size:13px">${c[0]} <small style="color:var(--faint);font-size:11px">משקל ${c[1]}%</small></span>
+      <select data-k="${i}">${[0,1,2,3,4,5].map(v=>`<option value="${v}" ${e.sc[i]===v?'selected':''}>${v||'—'}</option>`).join('')}</select>
+    </div>`).join('')}
+    <div style="display:flex;justify-content:space-between;align-items:baseline;margin-top:12px;padding-top:10px;border-top:.5px solid var(--line2)">
+      <span style="font-size:13px;color:var(--muted)">ציון משוקלל</span>
+      <b style="font-size:26px;font-weight:600">${evScore(e) ?? '—'}</b>
+    </div>
+    <button class="primary" id="adv" style="width:100%;margin-top:12px">${e.st===4?'ההערכה הושלמה':'העברה ל' + EV_STATIONS[Math.min(3,e.st+1)]}</button>`;
+  $('#ed').querySelectorAll('[data-k]').forEach(sel => sel.onchange = () => { e.sc[+sel.dataset.k] = +sel.value; evals(); });
+  $('#adv').onclick = () => {
+    if (e.st === 4) return toast('ההערכה כבר הושלמה');
+    e.st++; toast(e.st === 4 ? 'ההערכה הושלמה ונשמרה בתיק העובד' : 'הועבר ל' + EV_STATIONS[e.st]); evals();
+  };
+}
+
+/* ---------------- סקרים ---------------- */
+const SURVEY = {
+  name:'משוב הדרכת בטיחות', anon:true, dept:[],
+  qs:[{t:'דירוג 1-5', q:'עד כמה ההדרכה הייתה רלוונטית לתפקידך?', res:[2,3,9,21,14]},
+      {t:'דירוג 1-5', q:'עד כמה המדריך היה ברור?', res:[1,2,6,19,21]},
+      {t:'כן/לא', q:'האם תמליץ/י על ההדרכה לעמית?', res:[5,44]},
+      {t:'פתוחה', q:'מה היית משפר/ת?', res:[]}],
+  sent:49, answered:37
+};
+function surveys(){
+  const aud = PEOPLE.filter(p => !SURVEY.dept.length || SURVEY.dept.includes(p.dept));
+  $('#v-action').innerHTML = '<button class="primary">סקר חדש</button>';
+  $('#v-action').firstElementChild.onclick = () => toast('דמו: בונה שאלונים');
+  $('#view').innerHTML = `
+    <div class="cols">
+      <div class="card pad">
+        <h2>שאלון: ${SURVEY.name}</h2>
+        ${SURVEY.qs.map((q, i) => `<div class="q">
+          <div style="display:flex;justify-content:space-between;gap:10px">
+            <span style="font-size:13px">${i+1}. ${q.q}</span>
+            <span class="chip c-wait">${q.t}</span></div></div>`).join('')}
+        <h2 style="margin-top:16px">אוכלוסיית הסקר</h2>
+        <div class="filters" style="flex-wrap:wrap">${DEPTS.map(d=>`<button data-d="${d}" aria-pressed="${SURVEY.dept.includes(d)}">${d}</button>`).join('')}</div>
+        <p style="font-size:12.5px;color:var(--muted);margin:10px 0 0">${aud.length} נמענים · ${SURVEY.anon ? 'שאלון אנונימי' : 'שאלון גלוי'}</p>
+        <div style="display:flex;gap:8px;margin-top:10px">
+          <button class="primary" id="toggle-anon" style="background:#fff;color:var(--soft);border:.5px solid var(--line2)">${SURVEY.anon?'הפוך לגלוי':'הפוך לאנונימי'}</button>
+          <button class="primary" id="send-srv">הפצה ל-${aud.length} עובדים</button>
+        </div>
+      </div>
+      <div class="card pad">
+        <h2>תוצאות</h2>
+        <div style="display:flex;align-items:baseline;gap:8px;margin-bottom:6px">
+          <b style="font-size:28px;font-weight:600;line-height:1">${Math.round(SURVEY.answered/SURVEY.sent*100)}%</b>
+          <span style="font-size:12px;color:var(--muted)">שיעור מענה · ${SURVEY.answered} מתוך ${SURVEY.sent}</span>
+        </div>
+        <div class="bar" style="margin-bottom:14px"><i style="width:${SURVEY.answered/SURVEY.sent*100}%"></i></div>
+        ${SURVEY.qs.filter(q => q.res.length).map(q => {
+          const max = Math.max(...q.res), labels = q.res.length === 2 ? ['לא','כן'] : ['1','2','3','4','5'];
+          return `<div style="margin-bottom:14px">
+            <div style="font-size:12.5px;margin-bottom:6px">${q.q}</div>
+            ${q.res.map((v, i) => `<div style="display:flex;align-items:center;gap:8px;margin-bottom:4px">
+              <span style="width:22px;font-size:11px;color:var(--faint)">${labels[i]}</span>
+              <div class="bar" style="flex:1"><i style="width:${v/max*100}%"></i></div>
+              <span style="width:22px;font-size:11px;color:var(--muted)">${v}</span></div>`).join('')}
+          </div>`;
+        }).join('')}
+        <button class="qa" id="exp" style="border:.5px solid var(--line2);background:#fff;border-radius:8px;padding:7px 11px;font-size:12.5px">ייצוא ל-Excel / PDF</button>
+      </div>
+    </div>`;
+  $('#view').querySelectorAll('[data-d]').forEach(b => b.onclick = () => { toggle(SURVEY.dept, b.dataset.d); surveys(); });
+  $('#toggle-anon').onclick = () => { SURVEY.anon = !SURVEY.anon; surveys(); };
+  $('#send-srv').onclick = () => toast('נשלח ל-' + aud.length + ' עובדים · תזכורת אוטומטית בעוד 3 ימים');
+  $('#exp').onclick = () => toast('דמו: ייצוא תוצאות');
+}
+
+
+/* ---------------- אירועי רווחה ---------------- */
+const GIFTS = [
+  {ev:'יום הולדת',            gift:'שובר מתנה 150 ₪',        days:0, who:'עובד/ת'},
+  {ev:'לידת ילד/ה',           gift:'סל לידה + שובר 500 ₪',   days:1, who:'עובד/ת'},
+  {ev:'נישואין',              gift:'שובר מתנה 1,000 ₪',      days:3, who:'עובד/ת'},
+  {ev:'עלייה לכיתה א׳',       gift:'ערכת ציוד לבית הספר',    days:0, who:'ילד/ה'},
+  {ev:'תחילת שנת לימודים',    gift:'שובר ציוד 120 ₪',        days:0, who:'ילד/ה'},
+  {ev:'בר/בת מצווה',          gift:'שובר מתנה 400 ₪',        days:1, who:'ילד/ה'},
+  {ev:'גיוס לצה״ל',           gift:'ערכת חייל',              days:1, who:'ילד/ה'}
+];
+const EVENTS = [
+  {emp:'דנה לוי',    unit:'תפעול',     ev:'לידת ילד/ה',        sub:'—',            date:'18.09.2026', addr:'הרצל 14, רמת גן',   st:'ממתין'},
+  {emp:'יוסי ברק',   unit:'שירות',     ev:'יום הולדת',         sub:'—',            date:'22.09.2026', addr:'הגפן 3, חיפה',       st:'ממתין'},
+  {emp:'מאיה כהן',   unit:'פיתוח',     ev:'עלייה לכיתה א׳',    sub:'איתי, בן 6',   date:'01.09.2026', addr:'סוקולוב 9, חולון',   st:'נשלח לספק'},
+  {emp:'אבי נחום',   unit:'לוגיסטיקה', ev:'בר/בת מצווה',       sub:'נועה, בת 12',  date:'05.10.2026', addr:'האלון 22, באר שבע',  st:'ממתין'},
+  {emp:'רונית שמש',  unit:'כספים',     ev:'נישואין',           sub:'—',            date:'12.09.2026', addr:'ביאליק 41, תל אביב', st:'חולק'},
+  {emp:'עומר דגן',   unit:'מכירות',    ev:'גיוס לצה״ל',        sub:'יונתן, בן 18', date:'28.09.2026', addr:'הדקל 7, רעננה',      st:'ממתין'},
+  {emp:'נועה פרץ',   unit:'שירות',     ev:'תחילת שנת לימודים', sub:'שני, כיתה ד׳', date:'01.09.2026', addr:'ורד 5, נתניה',       st:'נשלח לספק'}
+];
+let evtFilter = 'הכל';
+
+function welfare(){
+  const list = EVENTS.filter(e => evtFilter === 'הכל' || e.st === evtFilter);
+  const gift = ev => GIFTS.find(g => g.ev === ev) || {gift:'—', days:0};
+  $('#v-action').innerHTML = '<button class="primary">הפקת קובץ לספק</button>';
+  $('#v-action').firstElementChild.onclick = () => {
+    const n = EVENTS.filter(e => e.st === 'ממתין').length;
+    if (!n) return toast('אין אירועים ממתינים');
+    EVENTS.forEach(e => { if (e.st === 'ממתין') e.st = 'נשלח לספק'; });
+    toast('קובץ עם ' + n + ' אירועים וכתובות למשלוח הופק ונשלח לספק'); welfare();
+  };
+  $('#view').innerHTML = `
+    <div class="grid kpis" style="margin-bottom:12px">
+      <div class="kpi warn"><b>${EVENTS.filter(e=>e.st==='ממתין').length}</b><span>ממתינים לטיפול</span></div>
+      <div class="kpi"><b>${EVENTS.filter(e=>e.st==='נשלח לספק').length}</b><span>נשלחו לספק</span></div>
+      <div class="kpi"><b>${EVENTS.filter(e=>e.st==='חולק').length}</b><span>חולקו</span></div>
+      <div class="kpi"><b>${EVENTS.reduce((a,e)=>a+gift(e.ev).days,0)}</b><span>ימי חופש מזכים</span></div>
+    </div>
+    <div class="tools">
+      <div class="filters">${['הכל','ממתין','נשלח לספק','חולק'].map(f=>`<button data-f="${f}" aria-pressed="${evtFilter===f}">${f}</button>`).join('')}</div>
+    </div>
+    <div class="cols">
+      <div class="card pad">
+        <h2>אירועים קרובים</h2>
+        <table><thead><tr><th>עובד/ת</th><th>אירוע</th><th>מועד</th><th>מתנה</th><th>כתובת למשלוח</th><th>סטטוס</th></tr></thead><tbody>
+        ${list.length ? list.map((e, i) => `<tr>
+          <td><b style="font-weight:500;font-size:13px">${e.emp}</b><br><small style="color:var(--faint);font-size:11px">${e.unit}${e.sub!=='—'?' · '+e.sub:''}</small></td>
+          <td style="font-size:12.5px">${e.ev}</td>
+          <td style="font-size:12.5px">${e.date}</td>
+          <td style="font-size:12.5px;color:var(--muted)">${gift(e.ev).gift}</td>
+          <td style="font-size:11.5px;color:var(--muted)">${e.addr}</td>
+          <td><span class="chip ${e.st==='חולק'?'c-ok':e.st==='נשלח לספק'?'c-run':'c-wait'}">${e.st}</span>
+              ${e.st==='נשלח לספק'?`<br><button data-done="${EVENTS.indexOf(e)}" style="margin-top:5px;border:.5px solid var(--line2);background:#fff;border-radius:7px;padding:3px 8px;font-size:11px">סימון כחולק</button>`:''}</td></tr>`).join('')
+        : '<tr><td colspan="6" style="color:var(--faint);font-size:12.5px">אין אירועים בסטטוס זה</td></tr>'}
+        </tbody></table>
+        <p style="font-size:11.5px;color:var(--faint);margin:10px 0 0">האירועים נגזרים אוטומטית מתאריכי הלידה, המצב המשפחתי ונתוני ילדי העובדים בתיק העובד.</p>
+      </div>
+      <div class="card pad">
+        <h2>קטלוג זכאויות</h2>
+        <table><thead><tr><th>אירוע</th><th>למי</th><th>מתנה</th><th>ימי חופש</th></tr></thead><tbody>
+        ${GIFTS.map(g=>`<tr><td style="font-size:12.5px">${g.ev}</td>
+          <td style="font-size:12px;color:var(--muted)">${g.who}</td>
+          <td style="font-size:12px;color:var(--muted)">${g.gift}</td>
+          <td><span class="chip ${g.days?'c-ok':'c-wait'}">${g.days?g.days+' ימים':'—'}</span></td></tr>`).join('')}
+        </tbody></table>
+        <p style="font-size:11.5px;color:var(--faint);margin:10px 0 0">סימון אירוע כחולק מעדכן את מערכת השכר, ובאירועים מזכים גם את מערכת הנוכחות בזכאות לימי חופש.</p>
+      </div>
+    </div>`;
+  $('#view').querySelectorAll('[data-f]').forEach(b => b.onclick = () => { evtFilter = b.dataset.f; welfare(); });
+  $('#view').querySelectorAll('[data-done]').forEach(b => b.onclick = () => {
+    const e = EVENTS[+b.dataset.done]; e.st = 'חולק';
+    const d = (GIFTS.find(g => g.ev === e.ev) || {days:0}).days;
+    toast(d ? 'עודכן בשכר ובנוכחות — ' + d + ' ימי חופש ל' + e.emp : 'עודכן בשכר — המתנה נמסרה');
+    welfare();
+  });
+}
+
+
+/* ---------------- מערכים ---------------- */
+const CODES = [
+  {n:'מסמכים ותעודות', use:'תיק עובד · מסמכים', vals:['חוזה העסקה','טופס 101','תעודת זהות','תעודת השכלה','אישור העסקה','כתב מינוי','מכתב סיום העסקה']},
+  {n:'מערכת מכתבים', use:'מחולל המכתבים', vals:['מכתב קליטה','מכתב סיום העסקה','אישור חופשה','אישור היעדרות','תעודת הצטיינות','כתב מינוי']},
+  {n:'ידע שפות', use:'תיק עובד · השכלה | דרישות תפקיד', vals:['עברית','אנגלית','ערבית','רוסית','אמהרית','צרפתית'], lvl:['שפת אם','שוטף','בינוני','בסיסי']},
+  {n:'מוסדות לימוד', use:'תיק עובד · השכלה', vals:['האוניברסיטה העברית','אוניברסיטת תל אביב','טכניון','אוניברסיטת בן גוריון','אוניברסיטת חיפה','המכללה למנהל','אונ׳ רייכמן']},
+  {n:'השכלה', use:'תיק עובד · השכלה | דרישות תפקיד', vals:['תיכונית','הנדסאי','תואר ראשון','תואר שני','תואר שלישי']},
+  {n:'תארים שקולים', use:'ועדות איתור · תנאי סף', vals:['B.A ≡ B.Sc','B.Ed ≡ B.A בחינוך','M.B.A ≡ M.A במנהל עסקים']},
+  {n:'התמחויות', use:'תיק עובד · השכלה | גיוס', vals:['הנדסת תעשייה וניהול','חשבונאות','משפטים','מדעי המחשב','עבודה סוציאלית','מנהל עסקים']},
+  {n:'קורסים', use:'ניהול קורסים והשתלמויות', vals:['בטיחות בעבודה','הגנת הפרטיות','מניעת הטרדה','שירות לקוחות','ניהול צוות']},
+  {n:'קורסי רענון ושמירה על כשירות', use:'מנוע תוקפים והתראות', vals:['מע״ר','כיבוי אש','נשק','עזרה ראשונה','עבודה בגובה'], valid:true},
+  {n:'השתלמויות', use:'תיק עובד · הדרכות', vals:['השתלמות בשכר','השתלמות על חשבון החברה','תואר ראשון','תואר שני','קורס מקצועי']},
+  {n:'ידע מקצועי', use:'דרישות תפקיד · גיוס', vals:['מערכות שכר','חשבות','בקרת תקציב','מערכות מידע','אחזקת מבנים','רכש']},
+  {n:'ניסיון מקצועי', use:'דרישות תפקיד · גיוס', vals:['עד שנה','1-3 שנים','3-5 שנים','5-10 שנים','מעל 10 שנים']},
+  {n:'ניסיון ניהולי', use:'דרישות תפקיד · ועדות איתור', vals:['ללא','ניהול צוות','ניהול מחלקה','ניהול אגף','ניהול חטיבה']},
+  {n:'יכולת ניהול עובדים', use:'הערכת עובדים · קריטריונים', vals:['עד 5 עובדים','5-15 עובדים','15-50 עובדים','מעל 50 עובדים']},
+  {n:'נתוני אישיות', use:'הערכת עובדים · מכוני מיון', vals:['יוזמה','עבודת צוות','עמידה בלחץ','שירותיות','יכולת למידה']},
+  {n:'הגדרת דרישות לתפקיד', use:'גיוס · פתיחת משרה', vals:['דרישות חובה','דרישות יתרון','תנאי סף','כישורים נדרשים']},
+  {n:'מאפייני אישיות', use:'גיוס · ועדות איתור', vals:['מנהיגות','אמינות','יצירתיות','ראייה מערכתית']},
+  {n:'עובד מצטיין', use:'טיפול בפרט · 2.15.5', vals:['מצטיין מנהל','מצטיין חטיבה','מצטיין ארגוני','ציון לשבח']},
+  {n:'הטבות לילדי עובדים', use:'אירועי רווחה', vals:['עלייה לכיתה א׳','תחילת שנת לימודים','בר/בת מצווה','גיוס לצה״ל']},
+  {n:'נתוני בני משפחה', use:'תיק עובד · פרטים אישיים', vals:['בן/בת זוג','ילד/ה','ילד/ה עם מוגבלות','איש קשר לחירום']},
+  {n:'ידועים בציבור', use:'תיק עובד · מצב משפחתי', vals:['נשוי/אה','רווק/ה','גרוש/ה','אלמן/ה','ידוע/ה בציבור']},
+  {n:'ניהול הלוואות לעובדים', use:'ממשק לשכר', vals:['הלוואה רגילה','הלוואת חירום','הלוואת לימודים'], fin:true},
+  {n:'ניהול מקדמות שכר', use:'ממשק לשכר', vals:['מקדמה חד פעמית','מקדמת חופשה','מקדמת הבראה'], fin:true},
+  {n:'תפקידים', use:'תקן ומצבה · מבנה ארגוני', vals:['תפקיד עיקרי','תפקיד משני','תפקיד בניסיון']}
+];
+let openCode = null;
+function codes(){
+  const c = CODES[openCode];
+  $('#v-action').innerHTML = '<button class="primary">מערך חדש</button>';
+  $('#v-action').firstElementChild.onclick = () => toast('דמו: הקמת מערך חדש');
+  $('#view').innerHTML = `
+    <div class="tools"><input id="cq" placeholder="חיפוש מערך" style="min-width:220px"></div>
+    <div class="cols">
+      <div class="card pad">
+        <table><thead><tr><th>מערך</th><th>ערכים</th><th>בשימוש ב־</th></tr></thead><tbody id="crows"></tbody></table>
+        <p style="font-size:11.5px;color:var(--faint);margin:10px 0 0">${CODES.length} מערכים · ${CODES.reduce((a,x)=>a+x.vals.length,0)} ערכים בסך הכול</p>
+      </div>
+      <div class="card pad" id="cd">${c ? '' : '<h2>ערכי המערך</h2><p style="color:var(--faint);font-size:12.5px;margin:0">בחר/י מערך כדי לראות ולערוך את הערכים שבו.</p>'}</div>
+    </div>`;
+  const rows = () => {
+    const q = ($('#cq').value || '').trim();
+    $('#crows').innerHTML = CODES.map((x, i) => ({x, i}))
+      .filter(({x}) => !q || (x.n + x.use + x.vals.join(' ')).includes(q))
+      .map(({x, i}) => `<tr class="click" data-c="${i}" ${i===openCode?'style="background:var(--orange-soft)"':''}>
+        <td><b style="font-weight:500;font-size:13px">${x.n}</b>
+          ${x.valid ? '<br><small style="color:var(--orange-ink);font-size:11px">מנוהל תוקף והתראות</small>' : ''}
+          ${x.fin ? '<br><small style="color:var(--orange-ink);font-size:11px">יתרות וממשק לשכר</small>' : ''}</td>
+        <td style="font-size:13px">${x.vals.length}</td>
+        <td style="font-size:11.5px;color:var(--muted)">${x.use}</td></tr>`).join('')
+      || '<tr><td colspan="3" style="color:var(--faint);font-size:12.5px">לא נמצאו מערכים</td></tr>';
+    $('#crows').querySelectorAll('tr[data-c]').forEach(r => r.onclick = () => { openCode = +r.dataset.c; codes(); });
+  };
+  rows(); $('#cq').oninput = rows;
+  if (!c) return;
+  $('#cd').innerHTML = `
+    <h2>${c.n}</h2>
+    <p style="font-size:11.5px;color:var(--faint);margin:-6px 0 12px">בשימוש ב־${c.use}</p>
+    ${c.valid ? '<div class="counter" style="margin-bottom:12px"><p>לכל ערך במערך זה מנוהל תוקף, והמערכת מתריעה לפני פקיעה</p></div>' : ''}
+    ${c.fin ? '<div class="counter" style="margin-bottom:12px"><p>לכל ערך מנוהלת יתרה, והעדכון עובר בממשק למערכת השכר</p></div>' : ''}
+    <table><thead><tr><th>קוד</th><th>ערך</th>${c.lvl?'<th>רמות</th>':''}${c.valid?'<th>תוקף</th>':''}<th></th></tr></thead><tbody>
+    ${c.vals.map((v, i) => `<tr>
+      <td style="font-size:12px;color:var(--faint)">${String(i+1).padStart(3,'0')}</td>
+      <td style="font-size:13px">${v}</td>
+      ${c.lvl?`<td style="font-size:11.5px;color:var(--muted)">${c.lvl.join(' · ')}</td>`:''}
+      ${c.valid?'<td style="font-size:12px">12 חודשים</td>':''}
+      <td style="text-align:left"><button data-del="${i}" style="border:0;background:transparent;color:var(--faint);font-size:15px">×</button></td></tr>`).join('')}
+    </tbody></table>
+    <div style="display:flex;gap:8px;margin-top:12px">
+      <input id="cnew" placeholder="ערך חדש" style="flex:1;border:.5px solid var(--line2);border-radius:8px;padding:7px 10px;font:inherit;font-size:13px">
+      <button class="primary" id="cadd" style="padding:7px 14px">הוספה</button>
+    </div>`;
+  $('#cd').querySelectorAll('[data-del]').forEach(b => b.onclick = () => {
+    const v = c.vals.splice(+b.dataset.del, 1)[0]; toast('הערך "' + v + '" הוסר'); codes();
+  });
+  $('#cadd').onclick = () => {
+    const v = ($('#cnew').value || '').trim();
+    if (!v) return toast('יש להזין ערך');
+    c.vals.push(v); toast('הערך נוסף למערך ' + c.n); codes();
+  };
+}
+
+/* ---------------- תקן ומצבה ---------------- */
+const TKN = [
+  {unit:'תפעול',     code:'1204', role:'מנהל/ת תפעול', std:12, act:11},
+  {unit:'שירות',     code:'2301', role:'טכנאי/ת שטח',  std:24, act:25},
+  {unit:'פיתוח',     code:'3102', role:'מפתח/ת',       std:18, act:16},
+  {unit:'מכירות',    code:'4405', role:'איש/ת מכירות', std:9,  act:9},
+  {unit:'כספים',     code:'5501', role:'רכז/ת שכר',    std:6,  act:5},
+  {unit:'לוגיסטיקה', code:'6603', role:'נהג/ת',        std:14, act:12}
+];
+function headcount(){
+  const tS = TKN.reduce((a, r) => a + r.std, 0), tA = TKN.reduce((a, r) => a + r.act, 0);
+  $('#view').innerHTML = `
+    <div class="grid kpis" style="margin-bottom:12px">
+      <div class="kpi"><b>${tS}</b><span>תקנים מאושרים</span></div>
+      <div class="kpi"><b>${tA}</b><span>איוש בפועל</span></div>
+      <div class="kpi"><b>${tS-tA}</b><span>תקנים פנויים</span></div>
+      <div class="kpi bad"><b>${TKN.filter(r=>r.act>r.std).length}</b><span>חריגות תקן</span></div>
+    </div>
+    <div class="card pad">
+      <table><thead><tr><th>יחידה</th><th>קוד משרה</th><th>משרה</th><th>תקן</th><th>איוש</th><th>ניצול</th><th>סטטוס</th></tr></thead><tbody>
+      ${TKN.map((r, i) => {
+        const pct = Math.round(r.act / r.std * 100), over = r.act > r.std;
+        return `<tr><td style="font-size:13px">${r.unit}</td><td style="font-size:12.5px;color:var(--muted)">${r.code}</td>
+          <td style="font-size:12.5px">${r.role}</td>
+          <td style="font-size:13px">${r.std}</td>
+          <td style="padding:4px"><input type="number" min="0" value="${r.act}" data-t="${i}"
+            style="width:52px;border:.5px solid var(--line2);border-radius:6px;padding:4px;font:inherit;font-size:12.5px;text-align:center"></td>
+          <td><div class="bar" style="width:76px"><i style="width:${Math.min(100,pct)}%;background:${over?'var(--red)':'var(--orange)'}"></i></div>
+              <small style="color:${over?'var(--red)':'var(--faint)'};font-size:11px">${pct}%</small></td>
+          <td><span class="chip ${over?'c-stuck':pct===100?'c-ok':'c-wait'}">${over?'חריגה':pct===100?'מאויש':'פנוי'}</span></td></tr>`;
+      }).join('')}
+      <tr><td colspan="3" style="font-weight:600">סה"כ</td><td style="font-weight:600">${tS}</td>
+          <td style="font-weight:600">${tA}</td><td colspan="2" style="font-weight:600">${Math.round(tA/tS*100)}%</td></tr>
+      </tbody></table>
+      <p style="font-size:11.5px;color:var(--faint);margin:10px 0 0">שינוי האיוש מעל התקן מפעיל התראה. המערכת מאפשרת, לאחר אישור, להקים עובד "על תקני".</p>
+    </div>`;
+  $('#view').querySelectorAll('[data-t]').forEach(inp => inp.onchange = () => {
+    const r = TKN[+inp.dataset.t]; r.act = Math.max(0, +inp.value || 0);
+    if (r.act > r.std) toast('חריגת תקן ב' + r.unit + ' — נדרש אישור להקמת עובד על תקני');
+    headcount();
+  });
+}
+
+/* ---------------- מבנה ארגוני ---------------- */
+const ORG = {n:'עמידר', std:83, act:78, k:[
+  {n:'חטיבת תפעול', std:38, act:36, k:[
+    {n:'אגף תפעול', std:12, act:11, k:[{n:'מחלקת אחזקה', std:7, act:7, k:[], emp:['דנה לוי','גיא רוזן','תמר אבידן','אורי פרץ']}, {n:'מחלקת פרויקטים', std:5, act:4, k:[]}]},
+    {n:'אגף שירות', std:26, act:25, k:[{n:'מוקד שירות', std:12, act:12, k:[]}, {n:'טכנאי שטח', std:14, act:13, k:[]}]}]},
+  {n:'חטיבת כספים', std:15, act:14, k:[{n:'מחלקת שכר', std:6, act:5, k:[]}, {n:'הנהלת חשבונות', std:9, act:9, k:[]}]},
+  {n:'חטיבת טכנולוגיות', std:18, act:16, k:[{n:'פיתוח', std:12, act:11, k:[]}, {n:'תשתיות', std:6, act:5, k:[]}]},
+  {n:'משאבי אנוש', std:12, act:12, k:[], emp:['שרון אלון','איזק מור','רונית שמש']}
+]};
+let orgPick = null;
+function orgTree(){
+  const draw = (node, depth) => `<li>
+      <span class="node" data-n="${node.n}"><b>${node.n}</b>
+        <small>תקן ${node.std} · איוש ${node.act}</small></span>
+      ${node.k.length ? `<ul>${node.k.map(c => draw(c, depth + 1)).join('')}</ul>` : ''}
+    </li>`;
+  $('#view').innerHTML = `
+    <div class="cols">
+      <div class="card pad tree"><ul>${draw(ORG, 0)}</ul>
+        <p style="font-size:11.5px;color:var(--faint);margin:12px 0 0">המבנה תומך בעד 7 רמות ומשמש גם את מערכת הנוכחות ואת השכר. לחיצה על צומת מציגה את נתוני המקור.</p>
+      </div>
+      <div class="card pad" id="od"><h2>נתוני יחידה</h2><p style="color:var(--faint);font-size:12.5px;margin:0">לחיצה על יחידה בעץ תציג כאן תקן, מצבה ופירוט.</p></div>
+    </div>`;
+  $('#view').querySelectorAll('[data-n]').forEach(el2 => el2.onclick = () => {
+    const find = (nd) => nd.n === el2.dataset.n ? nd : nd.k.map(find).find(Boolean);
+    const nd = find(ORG);
+    $('#od').innerHTML = `<h2>${nd.n}</h2>
+      <div class="grid kpis">
+        <div class="kpi"><b>${nd.std}</b><span>תקן מאושר</span></div>
+        <div class="kpi"><b>${nd.act}</b><span>איוש בפועל</span></div>
+        <div class="kpi ${nd.std-nd.act>0?'warn':''}"><b>${nd.std-nd.act}</b><span>פנוי</span></div>
+      </div>
+      <div class="bar" style="margin-top:12px"><i style="width:${nd.act/nd.std*100}%"></i></div>
+      <p style="font-size:12px;color:var(--muted);margin:8px 0 0">ניצול ${Math.round(nd.act/nd.std*100)}% · ${nd.k.length} יחידות כפופות</p>
+      ${nd.emp ? `<h2 style="margin-top:16px">עובדי היחידה</h2>
+        ${nd.emp.map(x=>`<div style="display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-top:.5px solid var(--line);font-size:13px">
+          <span>${x}</span><button class="drill" style="border:.5px solid var(--line2);background:#fff;border-radius:7px;padding:4px 9px;font-size:12px">תיק עובד ←</button></div>`).join('')}`
+        : '<p style="font-size:11.5px;color:var(--faint);margin:12px 0 0">בחירת יחידת קצה תציג את העובדים המשובצים בה.</p>'}`;
+    $('#od').querySelectorAll('.drill').forEach(b => b.onclick = () => { lifeTab='hier'; go('life'); });
+  });
+}
+
+/* ---------------- שליחה וסגמנטציה ---------------- */
+const FIRST = ['דנה','יוסי','מאיה','אבי','רונית','עומר','נועה','איתי','שירה','גיא','תמר','אורי','ליאת','רועי','הילה','עמית','מיכל','אסף','ענבל','יובל','שרון','דור','אורית','ניר'];
+const LAST  = ['לוי','ברק','כהן','נחום','שמש','דגן','אלון','פרץ','מזרחי','אבידן','גל','רוזן'];
+const DEPTS = ['תפעול','פיתוח','שירות','מכירות','כספים'];
+const SITES = ['תל אביב','חיפה','באר שבע'];
+const ROLES = ['מנהל/ת','טכנאי/ת','מפתח/ת','נהג/ת','רכז/ת'];
+const STAT  = ['פעיל','בקליטה','בעזיבה'];
+const PEOPLE = Array.from({length:48}, (_,i) => ({
+  name: FIRST[i % FIRST.length] + ' ' + LAST[(i*5) % LAST.length],
+  dept: DEPTS[i % DEPTS.length],
+  site: SITES[(i*2) % SITES.length],
+  role: ROLES[(i*3) % ROLES.length],
+  status: i % 11 === 0 ? STAT[1] : (i % 17 === 0 ? STAT[2] : STAT[0]),
+  noSign: i % 6 === 0,
+  noTrain: i % 4 === 0,
+  expired: i % 9 === 0
+}));
+
+const SEND = {what:'מסמך', item:'נוהל אבטחת מידע v3.0', dept:[], site:[], status:[], dyn:[], channel:'SMS', remind:'כל 3 ימים', sla:'7 ימים', sent:false};
+const DYN = [['noSign','עובדים שלא חתמו'],['noTrain','לא השלימו הדרכת חובה'],['expired','הסמכה שפגה תוקף']];
+
+function audience(){
+  return PEOPLE.filter(p =>
+    (!SEND.dept.length   || SEND.dept.includes(p.dept)) &&
+    (!SEND.site.length   || SEND.site.includes(p.site)) &&
+    (!SEND.status.length || SEND.status.includes(p.status)) &&
+    SEND.dyn.every(k => p[k]));
+}
+function toggle(arr, v){ const i = arr.indexOf(v); i < 0 ? arr.push(v) : arr.splice(i,1); }
+
+function send(){
+  const list = audience();
+  const chips = (label, opts, arr) => `<div style="margin-bottom:11px">
+      <div style="font-size:11px;color:var(--faint);margin-bottom:5px">${label}</div>
+      <div class="filters" style="flex-wrap:wrap">${opts.map(o=>`<button data-k="${arr}" data-v="${o}" aria-pressed="${SEND[arr].includes(o)}">${o}</button>`).join('')}</div>
+    </div>`;
+
+  $('#v-action').innerHTML = '';
+  $('#view').innerHTML = `
+    <div class="cols">
+      <div class="card pad">
+        <h2>מה שולחים</h2>
+        <div class="tools" style="margin-bottom:14px">
+          <select id="what">${['מסמך','הדרכה','טופס','תזכורת'].map(o=>`<option ${SEND.what===o?'selected':''}>${o}</option>`).join('')}</select>
+          <input id="item" value="${SEND.item}" style="flex:1" aria-label="שם הפריט">
+        </div>
+
+        <h2>למי שולחים</h2>
+        ${chips('מחלקה', DEPTS, 'dept')}
+        ${chips('אתר', SITES, 'site')}
+        ${chips('סטטוס עובד', STAT, 'status')}
+        <div style="margin-bottom:4px">
+          <div style="font-size:11px;color:var(--faint);margin-bottom:5px">קבוצות דינמיות</div>
+          <div class="filters" style="flex-wrap:wrap">${DYN.map(([k,l])=>`<button data-k="dyn" data-v="${k}" aria-pressed="${SEND.dyn.includes(k)}">${l}</button>`).join('')}</div>
+        </div>
+        <p style="font-size:11.5px;color:var(--faint);margin:9px 0 0">קבוצה דינמית מתעדכנת מעצמה: עובד שיחתום ייצא מהרשימה, ועובד חדש שלא חתם ייכנס אליה.</p>
+
+        <h2 style="margin-top:18px">איך שולחים</h2>
+        <div class="tools">
+          <select id="ch">${['SMS','WhatsApp','דוא״ל','התראה בפורטל'].map(o=>`<option ${SEND.channel===o?'selected':''}>${o}</option>`).join('')}</select>
+          <select id="rm">${['ללא תזכורת','כל 3 ימים','כל שבוע'].map(o=>`<option ${SEND.remind===o?'selected':''}>${o}</option>`).join('')}</select>
+          <select id="sla">${['3 ימים','7 ימים','14 ימים'].map(o=>`<option ${SEND.sla===o?'selected':''}>SLA ${o}</option>`).join('')}</select>
+        </div>
+      </div>
+
+      <div>
+        <div class="card pad" style="margin-bottom:12px">
+          <h2>נמענים</h2>
+          <div style="display:flex;align-items:baseline;gap:8px;margin-bottom:8px">
+            <b style="font-size:30px;font-weight:600;line-height:1">${list.length}</b>
+            <span style="font-size:12px;color:var(--muted)">מתוך ${PEOPLE.length} עובדים</span>
+          </div>
+          <div class="bar" style="margin-bottom:12px"><i style="width:${list.length/PEOPLE.length*100}%"></i></div>
+          <div style="max-height:186px;overflow:auto;border-top:.5px solid var(--line)">
+            ${list.length ? list.map(p=>`<div style="display:flex;justify-content:space-between;gap:8px;padding:7px 0;border-bottom:.5px solid var(--line);font-size:12.5px">
+                <span>${p.name}</span><span style="color:var(--faint);font-size:11px">${p.dept} · ${p.site}</span></div>`).join('')
+              : '<p style="font-size:12.5px;color:var(--faint);margin:10px 0">אין עובדים שעונים על כל התנאים.</p>'}
+          </div>
+          <button class="primary" id="go" style="width:100%;margin-top:12px" ${list.length?'':'disabled style="width:100%;margin-top:12px;opacity:.5;cursor:not-allowed"'}>
+            שליחה ל-${list.length} עובדים</button>
+          <p style="font-size:11.5px;color:var(--faint);margin:9px 0 0">${SEND.channel} · תזכורת ${SEND.remind} · SLA ${SEND.sla}</p>
+        </div>
+
+        <div class="card pad">
+          <h2>מה העובד יקבל</h2>
+          <div style="border:.5px solid var(--line2);border-radius:9px;padding:10px;background:var(--orange-bg)">
+            <div style="font-size:11px;color:var(--orange-ink);margin-bottom:3px">סינאל · הרמוני</div>
+            <div style="font-size:12.5px;line-height:1.6">שלום, ${SEND.what === 'הדרכה' ? 'הדרכה' : 'מסמך'} בשם ״${SEND.item}״ ממתין לך. זמן משוער: 3 דקות.</div>
+            <div style="margin-top:8px;padding-top:8px;border-top:.5px solid #F2D9CC;font-size:12.5px;color:var(--orange)">פתיחה ←</div>
+          </div>
+        </div>
+      </div>
+    </div>`;
+
+  $('#view').querySelectorAll('[data-k]').forEach(b => b.onclick = () => {
+    toggle(SEND[b.dataset.k], b.dataset.v); send();
+  });
+  $('#what').onchange = e => { SEND.what = e.target.value; send(); };
+  $('#item').oninput  = e => { SEND.item = e.target.value; };
+  $('#ch').onchange   = e => { SEND.channel = e.target.value; send(); };
+  $('#rm').onchange   = e => { SEND.remind = e.target.value; send(); };
+  $('#sla').onchange  = e => { SEND.sla = e.target.value.replace('SLA ',''); send(); };
+  const g = $('#go');
+  if (g) g.onclick = () => { if (audience().length) toast('נשלח ל-' + audience().length + ' עובדים · נפתח מעקב סטטוס'); };
+}
+
+/* ---------------- מנוע תהליכים ---------------- */
+function flow(){
+  $('#v-action').innerHTML = '<button class="primary">חוק חדש</button>';
+  $('#v-action').firstElementChild.onclick = () => toast('דמו: בונה חוקים — Drag & Drop');
+  $('#view').innerHTML = `<div style="max-width:640px">${DB.rules.map((r,i)=>`
+    <div class="rule"><div style="display:flex;justify-content:space-between;align-items:center;gap:12px">
+      <div><div style="font-size:12px;color:var(--faint);margin-bottom:3px">כאשר</div>
+        <div style="font-size:13.5px;font-weight:500">${r.w}</div>
+        <div style="font-size:12px;color:var(--faint);margin:7px 0 3px">אז</div>
+        <div style="font-size:13.5px">${r.t}</div>
+        <div style="margin-top:8px"><code>SLA: ${r.sla}</code> <code>Escalation: מנהל ישיר</code></div>
+      </div>
+      <button class="sw" data-r="${i}" aria-pressed="${r.on}" aria-label="הפעלת חוק"></button>
+    </div></div>`).join('')}</div>`;
+  $('#view').querySelectorAll('[data-r]').forEach(b => b.onclick = () => {
+    const r = DB.rules[+b.dataset.r]; r.on = !r.on; toast(r.on ? 'החוק הופעל' : 'החוק הושבת'); flow();
+  });
+}
+
+/* ---------------- פורטל עובד ---------------- */
+function portal(){
+  const tasks = [
+    {b:'חתימה על NDA', s:'ממתין · 2 דקות', go:'חתימה'},
+    {b:'אישור קריאה — נוהל אבטחת מידע', s:'ממתין · 1 דקה', go:'פתיחה'},
+    {b:'הדרכת הגנת הפרטיות', s:'בתהליך · 40% הושלמו', go:'המשך'},
+    {b:'חוזה העסקה', s:'נחתם 10.06.2026', go:'צפייה'}
+  ];
+  $('#view').innerHTML = `<div class="phone">
+    <div style="background:#F5F3F1;padding:5px 12px;display:flex;justify-content:space-between;font-size:11px;color:#8A8177"><span>9:41</span><span>סינאל</span></div>
+    <div style="height:3px;background:#EFE7E2"><i style="display:block;height:3px;width:60%;background:var(--orange)"></i></div>
+    <div style="padding:14px">
+      <div style="font-size:11px;color:var(--faint)">שלום דנה</div>
+      <div style="font-size:19px;font-weight:600;margin-top:2px">המשימות שלי</div>
+      <div style="font-size:12.5px;color:var(--muted);margin-top:3px">3 משימות פתוחות · זמן משוער 5 דק׳</div>
+    </div>
+    ${tasks.map(t=>`<div class="task"><span><b>${t.b}</b><small>${t.s}</small></span><span class="go">${t.go} ←</span></div>`).join('')}
+    <div style="padding:13px;border-top:.5px solid var(--line);font-size:12px;color:var(--faint);text-align:center">ציר הזמן האישי שלי</div>
+  </div>`;
+  $('#view').querySelectorAll('.task').forEach(t => t.onclick = () => toast('דמו: מעבר למשימה'));
+}
+
+draw();
+</script>
+</body>
+</html>
